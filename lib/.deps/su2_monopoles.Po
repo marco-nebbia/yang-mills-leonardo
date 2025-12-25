@@ -1,0 +1,114 @@
+lib/su2_monopoles.o: lib/su2_monopoles.c lib/../include/macro.h \
+ lib/../include/../config.h /usr/include/complex.h \
+ /usr/include/sys/cdefs.h /usr/include/machine/_default_types.h \
+ /usr/include/sys/features.h /usr/include/_newlib_version.h \
+ /usr/lib/gcc/x86_64-pc-cygwin/13/include/stddef.h /usr/include/stdlib.h \
+ /usr/include/machine/ieeefp.h /usr/include/_ansi.h /usr/include/newlib.h \
+ /usr/include/sys/config.h /usr/include/cygwin/config.h \
+ /usr/include/sys/reent.h /usr/include/_ansi.h /usr/include/sys/_types.h \
+ /usr/include/machine/_types.h /usr/include/sys/lock.h \
+ /usr/include/machine/stdlib.h /usr/include/cygwin/stdlib.h \
+ /usr/include/cygwin/wait.h /usr/include/stdio.h \
+ /usr/lib/gcc/x86_64-pc-cygwin/13/include/stdarg.h \
+ /usr/include/sys/stdio.h lib/../include/function_pointers.h \
+ lib/../include/flavour_matrix.h /usr/include/math.h \
+ lib/../include/macro.h lib/../include/su2_upd.h lib/../include/su2.h \
+ lib/../include/tens_prod.h lib/../include/sun.h lib/../include/sun_upd.h \
+ lib/../include/geometry.h \
+ /usr/lib/gcc/x86_64-pc-cygwin/13/include/stdbool.h \
+ lib/../include/gparam.h /usr/include/time.h /usr/include/machine/time.h \
+ /usr/include/sys/types.h /usr/include/sys/_stdint.h \
+ /usr/include/sys/_pthreadtypes.h /usr/include/sys/cpuset.h \
+ /usr/include/machine/types.h /usr/include/endian.h \
+ /usr/include/machine/endian.h /usr/include/machine/_endian.h \
+ /usr/include/bits/endian.h /usr/include/bits/wordsize.h \
+ /usr/include/sys/_timespec.h /usr/include/sys/sysmacros.h \
+ /usr/include/sys/timespec.h /usr/include/sys/_locale.h \
+ /usr/include/cygwin/time.h /usr/include/signal.h \
+ /usr/include/sys/signal.h /usr/include/sys/_sigset.h \
+ /usr/lib/gcc/x86_64-pc-cygwin/13/include/stdint.h /usr/include/stdint.h \
+ /usr/include/sys/_intsup.h /usr/include/cygwin/signal.h \
+ /usr/include/sys/ucontext.h lib/../include/gauge_conf.h \
+ /usr/x86_64-w64-mingw32/sys-root/mingw/include/openssl/md5.h \
+ /cygdrive/c/cygwin64/usr/x86_64-w64-mingw32/sys-root/mingw/include/openssl/macros.h \
+ /cygdrive/c/cygwin64/usr/x86_64-w64-mingw32/sys-root/mingw/include/openssl/opensslconf.h \
+ /cygdrive/c/cygwin64/usr/x86_64-w64-mingw32/sys-root/mingw/include/openssl/configuration.h \
+ /cygdrive/c/cygwin64/usr/x86_64-w64-mingw32/sys-root/mingw/include/openssl/opensslv.h \
+ /cygdrive/c/cygwin64/usr/x86_64-w64-mingw32/sys-root/mingw/include/openssl/e_os2.h \
+ /usr/include/inttypes.h lib/../include/gauge_conf.h \
+ lib/../include/gparam.h lib/../include/su2_monopoles.h \
+ lib/../include/sun_monopoles.h
+lib/../include/macro.h:
+lib/../include/../config.h:
+/usr/include/complex.h:
+/usr/include/sys/cdefs.h:
+/usr/include/machine/_default_types.h:
+/usr/include/sys/features.h:
+/usr/include/_newlib_version.h:
+/usr/lib/gcc/x86_64-pc-cygwin/13/include/stddef.h:
+/usr/include/stdlib.h:
+/usr/include/machine/ieeefp.h:
+/usr/include/_ansi.h:
+/usr/include/newlib.h:
+/usr/include/sys/config.h:
+/usr/include/cygwin/config.h:
+/usr/include/sys/reent.h:
+/usr/include/_ansi.h:
+/usr/include/sys/_types.h:
+/usr/include/machine/_types.h:
+/usr/include/sys/lock.h:
+/usr/include/machine/stdlib.h:
+/usr/include/cygwin/stdlib.h:
+/usr/include/cygwin/wait.h:
+/usr/include/stdio.h:
+/usr/lib/gcc/x86_64-pc-cygwin/13/include/stdarg.h:
+/usr/include/sys/stdio.h:
+lib/../include/function_pointers.h:
+lib/../include/flavour_matrix.h:
+/usr/include/math.h:
+lib/../include/macro.h:
+lib/../include/su2_upd.h:
+lib/../include/su2.h:
+lib/../include/tens_prod.h:
+lib/../include/sun.h:
+lib/../include/sun_upd.h:
+lib/../include/geometry.h:
+/usr/lib/gcc/x86_64-pc-cygwin/13/include/stdbool.h:
+lib/../include/gparam.h:
+/usr/include/time.h:
+/usr/include/machine/time.h:
+/usr/include/sys/types.h:
+/usr/include/sys/_stdint.h:
+/usr/include/sys/_pthreadtypes.h:
+/usr/include/sys/cpuset.h:
+/usr/include/machine/types.h:
+/usr/include/endian.h:
+/usr/include/machine/endian.h:
+/usr/include/machine/_endian.h:
+/usr/include/bits/endian.h:
+/usr/include/bits/wordsize.h:
+/usr/include/sys/_timespec.h:
+/usr/include/sys/sysmacros.h:
+/usr/include/sys/timespec.h:
+/usr/include/sys/_locale.h:
+/usr/include/cygwin/time.h:
+/usr/include/signal.h:
+/usr/include/sys/signal.h:
+/usr/include/sys/_sigset.h:
+/usr/lib/gcc/x86_64-pc-cygwin/13/include/stdint.h:
+/usr/include/stdint.h:
+/usr/include/sys/_intsup.h:
+/usr/include/cygwin/signal.h:
+/usr/include/sys/ucontext.h:
+lib/../include/gauge_conf.h:
+/usr/x86_64-w64-mingw32/sys-root/mingw/include/openssl/md5.h:
+/cygdrive/c/cygwin64/usr/x86_64-w64-mingw32/sys-root/mingw/include/openssl/macros.h:
+/cygdrive/c/cygwin64/usr/x86_64-w64-mingw32/sys-root/mingw/include/openssl/opensslconf.h:
+/cygdrive/c/cygwin64/usr/x86_64-w64-mingw32/sys-root/mingw/include/openssl/configuration.h:
+/cygdrive/c/cygwin64/usr/x86_64-w64-mingw32/sys-root/mingw/include/openssl/opensslv.h:
+/cygdrive/c/cygwin64/usr/x86_64-w64-mingw32/sys-root/mingw/include/openssl/e_os2.h:
+/usr/include/inttypes.h:
+lib/../include/gauge_conf.h:
+lib/../include/gparam.h:
+lib/../include/su2_monopoles.h:
+lib/../include/sun_monopoles.h:

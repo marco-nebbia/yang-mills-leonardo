@@ -1,0 +1,12 @@
+{
+    "C_Cpp.default.compilerPath": "C:/cygwin64/bin/gcc.exe",
+    "files.associations": {
+        "complex.h": "c",
+        "stdio.h": "c",
+        "md5.h": "c",
+        "gparam.h": "c"
+    },
+    "python-envs.defaultEnvManager": "ms-python.python:conda",
+    "python-envs.defaultPackageManager": "ms-python.python:conda",
+    "python-envs.pythonProjects": []
+}

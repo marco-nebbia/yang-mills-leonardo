@@ -1,0 +1,53 @@
+lib/su2.o: lib/su2.c /usr/include/math.h /usr/include/sys/reent.h \
+ /usr/include/_ansi.h /usr/include/newlib.h \
+ /usr/include/_newlib_version.h /usr/include/sys/config.h \
+ /usr/include/machine/ieeefp.h /usr/include/sys/features.h \
+ /usr/include/cygwin/config.h \
+ /usr/lib/gcc/x86_64-pc-cygwin/13/include/stddef.h \
+ /usr/include/sys/cdefs.h /usr/include/machine/_default_types.h \
+ /usr/include/sys/_types.h /usr/include/machine/_types.h \
+ /usr/include/sys/lock.h /usr/include/_ansi.h /usr/include/stdio.h \
+ /usr/lib/gcc/x86_64-pc-cygwin/13/include/stdarg.h \
+ /usr/include/sys/stdio.h /usr/include/stdlib.h \
+ /usr/include/machine/stdlib.h /usr/include/cygwin/stdlib.h \
+ /usr/include/cygwin/wait.h lib/../include/aligncheck.h \
+ lib/../include/../include/macro.h lib/../include/../include/../config.h \
+ lib/../include/endianness.h /usr/include/complex.h \
+ lib/../include/flavour_matrix.h lib/../include/macro.h \
+ lib/../include/macro.h lib/../include/random.h lib/../include/su2.h \
+ lib/../include/flavour_matrix.h lib/../include/tens_prod.h
+/usr/include/math.h:
+/usr/include/sys/reent.h:
+/usr/include/_ansi.h:
+/usr/include/newlib.h:
+/usr/include/_newlib_version.h:
+/usr/include/sys/config.h:
+/usr/include/machine/ieeefp.h:
+/usr/include/sys/features.h:
+/usr/include/cygwin/config.h:
+/usr/lib/gcc/x86_64-pc-cygwin/13/include/stddef.h:
+/usr/include/sys/cdefs.h:
+/usr/include/machine/_default_types.h:
+/usr/include/sys/_types.h:
+/usr/include/machine/_types.h:
+/usr/include/sys/lock.h:
+/usr/include/_ansi.h:
+/usr/include/stdio.h:
+/usr/lib/gcc/x86_64-pc-cygwin/13/include/stdarg.h:
+/usr/include/sys/stdio.h:
+/usr/include/stdlib.h:
+/usr/include/machine/stdlib.h:
+/usr/include/cygwin/stdlib.h:
+/usr/include/cygwin/wait.h:
+lib/../include/aligncheck.h:
+lib/../include/../include/macro.h:
+lib/../include/../include/../config.h:
+lib/../include/endianness.h:
+/usr/include/complex.h:
+lib/../include/flavour_matrix.h:
+lib/../include/macro.h:
+lib/../include/macro.h:
+lib/../include/random.h:
+lib/../include/su2.h:
+lib/../include/flavour_matrix.h:
+lib/../include/tens_prod.h:
