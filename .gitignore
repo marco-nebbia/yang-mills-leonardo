@@ -1,3 +1,5 @@
 # Ignore executable files
 *.o
 *.exe
+
+script_YM_Cygwin.sh
