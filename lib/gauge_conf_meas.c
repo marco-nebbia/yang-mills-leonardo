@@ -945,6 +945,290 @@ void polyakov_product_in_bulk_dir2(Gauge_Conf const * const GC,
    *im=improd;
    }
 
+// product of two horizontal Polyakov loops that
+// start from the Dirichlet faces 
+void polyakov_product_horizontal(Gauge_Conf const * const GC,
+                              Geometry const * const geo,
+                              int d,
+                              double *re,
+                              double *im)
+   {
+   double repoly1, repoly2;
+   double impoly1, impoly2;
+   double reprod, improd;
+   
+   #ifdef DEBUG
+   if(d<=0)
+      {
+      fprintf(stderr, "Distance between Polyakov loops <=0!\n", __FILE__, __LINE__);
+      exit(EXIT_FAILURE);
+      }
+   elif(d>geo->d_size[0])
+      {
+      fprintf(stderr, "Distance between Polyakov loops greater than lattice size!\n", __FILE__, __LINE__);
+      exit(EXIT_FAILURE);
+      }  
+   #endif
+
+   int cartcoord[STDIM];
+   long r;
+
+   cartcoord[0]=0; // bottom of lattice
+   // in the bulk, halfway between the
+   // two Dirichlet faces
+   cartcoord[1]=((geo->d_size[1])/2)-1;
+   cartcoord[2]=0;
+
+   for(int i=3; i<STDIM && i!=2; i++)
+      {
+      cartcoord[i]=0; // x_i=0
+      }
+   
+   reprod=0.;
+   improd=0.;
+
+   // x_0 is direction of Polyakov loop
+   // x_1 has Dirichlet boundary condition 
+   // so no translation invariance
+   #if STDIM == 3  
+   for(int x0=0; x0<geo->d_size[0]; x0++)
+      {
+      cartcoord[0]=0;
+
+      for(int x2=0; x2<geo->d_size[2]; x2++)
+         {
+         cartcoord[2]=x2;
+         r=cart_to_si(cartcoord, geo);
+      
+         // compute Polyakov loop from site r that has x_2
+         polyakov_horizontal_fixed_site(GC, geo, r, 1, &repoly1, &impoly1);
+
+         // moving to x_2+d
+         cartcoord[2]+=d;
+         if(cartcoord[2]>=geo->d_size[2]) cartcoord[2]-=geo->d_size[2];
+
+         r=cart_to_si(cartcoord, geo);
+
+         // compute Polyakov loop from site r' that has x_2=l+d
+         polyakov_horizontal_fixed_site(GC, geo, r, 1, &repoly2, &impoly2);
+      
+         #if NCOLOR == 2
+         // if gauge group is SU(2), trace is real
+         reprod+=repoly1*repoly2;
+         #elif
+         // if gauge group is SU(N) with N!=2, trace is complex
+         // so conjugate the 2nd loop to take it in downward sense
+         // impoly2->-impoly2
+         // and use complex multiplication rules
+         reprod+=repoly1*repoly2+impoly1*impoly2;
+         improd+=-repoly1*impoly2+repoly2*impoly1;
+         #endif
+
+         #if GAUGE_DEBUG == 3
+         printf("Repoly1: %f\n", repoly1);
+         printf("Repoly2: %f\n", repoly2);
+         printf("Correlator: %f\n\n", reprod);
+         #endif
+         }
+      }
+   
+   reprod/=(((double) geo->d_size[2])*((double) geo->d_size[0]));
+
+   #elif STDIM == 4
+   for(int x0=0; x0<(geo->d_size[0]); x0++)
+      {
+      cartcoord[0]=x0;
+
+      for(int x2=0; x2<(geo->d_size[2]); x2++)
+         {
+         cartcoord[2]=x2;
+
+         for(int x3=0; x3<(geo->d_size[3]); x3++)
+            {
+            cartcoord[3]=x3;
+            r=cart_to_si(cartcoord, geo);
+
+            // compute Polyakov loop from site r that has x_2=l
+            polyakov_horizontal_fixed_site(GC, geo, r, &repoly1, &impoly1);
+
+            // moving to x_2=l+d
+            cartcoord[2]+=d;
+            if(cartcoord[2]>=geo->d_size[2]) cartcoord[2]-=geo->d_size[2];
+
+            r=cart_to_si(cartcoord, geo);
+
+            // compute Polyakov loop from site r' that has x_2=l+d
+            polyakov_horizontal_fixed_site(GC, geo, r, 1, &repoly2, &impoly2);
+         
+            #if NCOLOR == 2
+            // if gauge group is SU(2), trace is real
+            reprod+=repoly1*repoly2;
+            #elif
+            // if gauge group is SU(N) with N!=2, trace is complex
+            // so conjugate the 2nd loop to take it in downward sense
+            // impoly2->-impoly2
+            // and use complex multiplication rules
+            reprod+=repoly1*repoly2+impoly1*impoly2;
+            improd+=-repoly1*impoly2+repoly2*impoly1;
+            #endif
+
+            #if GAUGE_DEBUG == 3
+            printf("Repoly1: %f\n", repoly1);
+            printf("Repoly2: %f\n", repoly2);
+            printf("Correlator: %f\n\n", reprod);
+            #endif
+            }
+         }
+      }
+   // average for number of sites
+   reprod/=(((double) geo->d_size[0])*((double) geo->d_size[2])*((double) geo->d_size[3]));
+   improd/=(((double) geo->d_size[0])*((double) geo->d_size[2])*((double) geo->d_size[3]));  
+   #endif
+   
+   *re=reprod;
+   *im=improd;
+   }
+
+// compute the wilson loop of size R x T on border
+// where Dirichlet boundary conditions are applied
+void wilson_loop_dirichlet(Gauge_Conf const * const GC,
+                             Geometry const * const geo,
+                             int R,
+                             int T,
+                             double *re,
+                             double *im)
+   {
+   int cartcoord[STDIM];
+   long r;
+   GAUGE_GROUP matrix;
+
+   double rewilson;
+   double imwilson;
+
+   // check if sizes of Wilson loop are smaller
+   // of the corresponding lattice sizes
+   if(R>(geo->d_size[1]))
+      {
+      fprintf(stderr, "Spatial size R of Wilson loop greater than corresponding lattice size! (%s, %d)\n", __FILE__, __LINE__);
+      exit(EXIT_FAILURE);
+      }
+   if(T>(geo->d_size[0]))
+      {
+      fprintf(stderr, "Temporal size T of Wilson loop greater than corresponding lattice size! (%s, %d)\n", __FILE__, __LINE__);
+      exit(EXIT_FAILURE);
+      }
+
+   // initialize on the lattice border
+   cartcoord[1]=0;
+
+   rewilson=0.;
+   imwilson=0.;
+
+   #if STDIM == 3
+   for(int x0=0; x0<(geo->d_size[0]); x0++)
+      {
+      cartcoord[0]=x0;
+
+      for(int x2=0; x2<(geo->d_size[2]); x2++)
+         {
+         cartcoord[2]=x2;
+         r=cart_to_si(cartcoord, geo);
+      
+         // initialize gauge matrix to 1
+         one(&matrix);
+
+         // first horizontal product
+         for(int space=0; space<R; space++)
+            {
+            times_equal(&matrix, &(GC->lattice[r][1]));
+
+            r=nnp(geo, r, 1);
+            }
+
+         // first vertical product
+         for(int time=0; time<T; time++)
+            {
+            times_equal(&matrix, &(GC->lattice[r][0]));
+
+            r=nnp(geo, r, 0);
+            }
+
+         // second horizontal product (adjoint)
+         for(int space=0; space<R; space++)
+            {
+            // we move first this time because the SU(2) gauge variable
+            // U[r][-1] corresponds to the adjoint of the previous U^{dag}[r-1][1]
+            r=nnm(geo, r, 1);
+
+            times_equal_dag(&matrix, &(GC->lattice[r][1]));
+            }
+
+         // moving back to original cartcoord[0]
+         cartcoord[0]=x0;
+
+         rewilson+=retr(&matrix);
+         imwilson+=imtr(&matrix);
+         }
+      }
+
+   *re=rewilson/((geo->d_size[0])*(geo->d_size[2]));
+   *im=imwilson/((geo->d_size[0])*(geo->d_size[2]));
+   #elif STDIM == 4
+   for(int x0=0; x0<(geo->d_size[0]); x0++)
+      {
+      cartcoord[0]=x0;
+
+      for(int x2=0; x2<(geo->d_size[2]); x2++)
+         {
+         cartcoord[2]=x2;
+
+         for(int x3=0; x3<(geo->d_size[3]); x3++)
+            {
+            cartcoord[3]=x3;
+            r=cart_to_si(cartcoord, geo);
+      
+            // initialize gauge matrix to 1
+            one(&matrix);
+
+            // first horizontal product
+            for(int space=0; space<R; space++)
+               {
+               times_equal(&matrix, &(GC->lattice[r][1]));
+
+               r=nnp(geo, r, 1);
+               }
+
+            // first vertical product
+            for(int time=0; time<T; time++)
+               {
+               times_equal(&matrix, &(GC->lattice[r][0]));
+
+               r=nnp(geo, r, 0);
+               }
+
+            // second horizontal product (adjoint)
+            for(int space=0; space<R; space++)
+               {
+               // we move first this time because the SU(2) gauge variable
+               // U[r][-1] corresponds to the adjoint of the previous U^{dag}[r-1][1]
+               r=nnm(geo, r, 1);
+
+               times_equal_dag(&matrix, &(GC->lattice[r][1]));
+               }
+
+            // moving back to original cartcoord[0]
+            cartcoord[0]=x0;
+
+            rewilson+=retr(&matrix);
+            imwilson+=imtr(&matrix);
+            }
+         }
+      }
+
+   *re=rewilson/((geo->d_size[0])*(geo->d_size[2])*(geo->d_size[3]));
+   *im=imwilson/((geo->d_size[0])*(geo->d_size[2])*(geo->d_size[3]));
+   #endif
+   }
 
 // compute the local topological charge at point r
 // see readme for more details

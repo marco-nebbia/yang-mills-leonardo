@@ -219,15 +219,26 @@ void polyakov_for_tracedef(Gauge_Conf const * const GC,
                            double *repoly,
                            double *impoly);
 void polyakov_product_in_bulk_dir1(Gauge_Conf const * const GC,
-                              Geometry const * const geo,
-                              int dist,
-                              double *re,
-                              double *im);
+                                   Geometry const * const geo,
+                                   int dist,
+                                   double *re,
+                                   double *im);
 void polyakov_product_in_bulk_dir2(Gauge_Conf const * const GC,
-                              Geometry const * const geo,
-                              int dist,
-                              double *re,
-                              double *im);
+                                   Geometry const * const geo,
+                                   int dist,
+                                   double *re,
+                                   double *im);
+void polyakov_product_horizontal(Gauge_Conf const * const GC,
+                                 Geometry const * const geo,
+                                 int d,
+                                 double *re,
+                                 double *im);
+void wilson_loop_dirichlet(Gauge_Conf const * const GC,
+                           Geometry const * const geo,
+                           int R,
+                           int T,
+                           double *re,
+                           double *im);
 double loc_topcharge(Gauge_Conf const * const GC,
                      Geometry const * const geo,
                      GParam const * const param,
