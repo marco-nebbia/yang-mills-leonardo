@@ -192,6 +192,11 @@ void plaquette(Gauge_Conf const * const GC,
                Geometry const * const geo,
                double *plaqs,
                double *plaqt);
+void plaquette_slice_time(Gauge_Conf const * const GC,
+                          Geometry const * const geo,
+                          int slice,
+                          double *plaqpar,
+                          double *plaqort);
 void clover_disc_energy(Gauge_Conf const * const GC,
                         Geometry const * const geo,
                         double *energy);
@@ -209,11 +214,11 @@ void polyakov_fixed_site(Gauge_Conf const * const GC,
                          double *repoly,
                          double *impoly);
 void polyakov_horizontal_fixed_site(Gauge_Conf const * const GC,
-                         Geometry const * const geo,
-                         long r,
-                         int dir,
-                         double *repoly,
-                         double *impoly);
+                                    Geometry const * const geo,
+                                    long r,
+                                    int dir,
+                                    double *repoly,
+                                    double *impoly);
 void polyakov_for_tracedef(Gauge_Conf const * const GC,
                            Geometry const * const geo,
                            double *repoly,
@@ -233,10 +238,12 @@ void polyakov_product_horizontal(Gauge_Conf const * const GC,
                                  int d,
                                  double *re,
                                  double *im);
-void wilson_loop_dirichlet(Gauge_Conf const * const GC,
+void wilson_slice_time_dir(Gauge_Conf const * const GC,
                            Geometry const * const geo,
                            int R,
                            int T,
+                           int slice,
+                           int dir,
                            double *re,
                            double *im);
 double loc_topcharge(Gauge_Conf const * const GC,
