@@ -1,6 +1,8 @@
 #ifndef GEOMETRY_C
 #define GEOMETRY_C
 
+#define DEBUG
+
 #include"../include/macro.h"
 
 #include<stdio.h>
@@ -17,7 +19,8 @@ long (*lex_to_si)(long lex, Geometry const * const geo)=&lex_to_lexeo;          
 long (*si_to_lex)(long si, Geometry const * const geo)=&lexeo_to_lex;           // lexicographic -> single index
 long (*sisp_and_t_to_si_compute)(long sisp, int t, Geometry const * const geo)=&lexeosp_and_t_to_lexeo;            // single index spatial and time -> single index tot
 void (*si_to_sisp_and_t_compute)(long *sisp, int *t, long si, Geometry const * const geo)=&lexeo_to_lexeosp_and_t; // single index tot -> single index spatial and time
-
+long (*sisport_and_par_to_sisp_compute)(long sisport, int par, int dir, Geometry const * const geo)=&lexeosport_and_par_to_lexeosp;
+void (*sisp_to_sisport_and_par_compute)(long *sisport, int *par, long sisp, int dir, Geometry const * const geo)=&lexeosp_to_lexeosport_and_par;
 
 // initialize geometry
 void init_geometry(Geometry *geo, int insize[STDIM])
@@ -104,6 +107,45 @@ void init_geometry(Geometry *geo, int insize[STDIM])
        }
      }
 
+     
+  err=posix_memalign((void**)&(geo->d_parslice), (size_t)INT_ALIGN, (size_t) geo->d_volume * sizeof(int));
+  if(err!=0)
+    {
+    fprintf(stderr, "Problems in allocating the geometry! (%s, %d)\n", __FILE__, __LINE__);
+    exit(EXIT_FAILURE);
+    }
+  err=posix_memalign((void**)&(geo->d_ortcomp), (size_t)INT_ALIGN, (size_t) geo->d_volume * sizeof(long));
+  if(err!=0)
+    {
+    fprintf(stderr, "Problems in allocating the geometry! (%s, %d)\n", __FILE__, __LINE__);
+    exit(EXIT_FAILURE);
+    }
+  long size_volume_divided_dir;
+  int size_time_times_dir;
+  for(i=1; i<STDIM; i++)
+    {    
+    size_time_times_dir=(int) geo->d_size[0]*geo->d_size[i];
+    size_volume_divided_dir=(long) geo->d_space_vol/geo->d_size[i];
+    err=posix_memalign((void**)&(geo->d_parort), (size_t)INT_ALIGN, (size_t) size_time_times_dir * sizeof(long *));
+    if(err!=0)
+      {
+      fprintf(stderr, "Problems in allocating the geometry! (%s, %d)\n", __FILE__, __LINE__);
+      exit(EXIT_FAILURE);
+      }
+    for(r=0; r<geo->d_size[0]*geo->d_size[i]; r++)
+      {
+      err=posix_memalign((void**)&(geo->d_parort[r][i]), (size_t)INT_ALIGN, (size_t) size_volume_divided_dir * sizeof(long));
+      if(err!=0)
+        {
+        fprintf(stderr, "Problems in allocating the geometry! (%s, %d)\n", __FILE__, __LINE__);
+        exit(EXIT_FAILURE);
+        }
+      }
+    }
+  
+
+     
+
   // INITIALIZE
   for(r=0; r<geo->d_volume; r++)
      {
@@ -141,6 +183,14 @@ void init_geometry(Geometry *geo, int insize[STDIM])
      geo->d_spacecomp[r]=rp;
      geo->d_timeslice[r]=value;
      geo->d_tsp[value][rp]=r;
+
+     for(int j=1; j<STDIM; j++)
+      {
+      sisp_to_sisport_and_par_compute(&rm, &valuem, rp, j, geo);
+      geo->d_ortcomp[rp][j]=rm;
+      geo->d_parslice[rp][j]=valuem;
+      geo->d_parort[valuem][rm][j]=rp;
+      }
      }
 
   #ifdef DEBUG
@@ -148,17 +198,17 @@ void init_geometry(Geometry *geo, int insize[STDIM])
   #endif
   }  
   
-bool check_link_on_border(Geometry const * const geo, long r, long dir)
+int check_link_on_border(Geometry const * const geo, long r, long dir)
   {
   int cartcoord[STDIM];
 
   si_to_cart(cartcoord, r, geo);
   
-  // if site is on the border (we chose 1st spatial dimension)
-  // and link is not orthogonal to the face, return true
-  if(cartcoord[1]!=0 || cartcoord[1]!=(geo->d_size[1]-1)) return false;
-  else if(dir==1) return false;
-  else return true;
+  // if site is on the border (we chose time dimension)
+  // and link is not orthogonal to the face, return 1 (true)
+  if(cartcoord[0]!=0 || cartcoord[1]!=(geo->d_size[0]-1)) return 0;
+  else if(dir==0) return 0;
+  else return 1;
   }
 
 
@@ -282,6 +332,66 @@ void test_geometry(Geometry const * const geo)
         exit(EXIT_FAILURE);
         }
       }
+
+    #if STDIM > 2
+    long sisport;
+    int par, space_vol_ort;;
+    int cartsport[STDIM-2];
+
+    // test of lexsport_to_cartsport <-> cartsport_to_lexsport
+    for(dir=1; dir<STDIM; dir++)
+      {
+      space_vol_ort=(int) (geo->d_space_vol/geo->d_size[dir]);
+
+      for(sisport=0; sisport<space_vol_ort; sisport++)
+        {
+        lexeosport_to_cartsport(cartsport, sisport, dir, geo);
+        ris_test=cartsport_to_lexeosport(cartsport, dir, geo);
+
+        if(sisport != ris_test)
+          {
+          fprintf(stderr, "Problems while testing geometry! (%s, %d)\n", __FILE__, __LINE__);
+          exit(EXIT_FAILURE);
+          }
+        }
+      }
+
+    // test of lexeosport_to_cartsport <-> cartsport_to_lexeosport
+    for(dir=1; dir<STDIM; dir++)
+      {
+      space_vol_ort=(int) (geo->d_space_vol/geo->d_size[dir]);
+
+      for(sisport=0; sisport<space_vol_ort; sisport++)
+        {
+        lexsport_to_cartsport(cartsport, sisport, dir, geo);
+        ris_test=cartsport_to_lexsport(cartsport, dir, geo);
+
+        if(sisport != ris_test)
+          {
+          fprintf(stderr, "Problems while testing geometry! (%s, %d)\n", __FILE__, __LINE__);
+          exit(EXIT_FAILURE);
+          }
+        }
+      }
+
+    // test of lexeosport_and_par_to_lexeosp <-> lexeosp_to_lexeosport_and_par
+    for(dir=1; dir<STDIM; dir++)
+      {
+      space_vol_ort=(int) (geo->d_space_vol/geo->d_size[dir]);
+
+      for(sisport=0; sisport<space_vol_ort; sisport++)
+        {
+        lexeosp_to_lexeosport_and_par(&sisport, &par, sisp, dir, geo);
+        ris_test=lexeosport_and_par_to_lexeosp(sisport, par, dir, geo);
+
+        if(sisp != ris_test)
+          {
+          fprintf(stderr, "Problems while testing geometry! (%s, %d)\n", __FILE__, __LINE__);
+          exit(EXIT_FAILURE);
+          }
+        }
+      }
+    #endif
   }
 
 
@@ -613,60 +723,222 @@ void lexeo_to_lexeosp_and_t(long *lexeosp, int *t, long lexeo, Geometry const * 
   *lexeosp=cartsp_to_lexeosp(ccsp, geo);
   }
 
-long cartorth_to_lexorth(int const * const ccorth, Geometry const * const geo)
+#if STDIM > 2
+long cartsport_to_lexsport(int const * const ccsport, int dir, Geometry const * const geo)
   {
   // the index for the spatial cartesian coord. goes from 0 to STDIM-2 
-  // hence ccsp[STDIM-1] and ccorth[STDIM-2]
+  // hence ccsp[STDIM-1] and ccsport[STDIM-2]
   // cc   = t x1 x2 ... x_{STDIM-1}
-  // ccsp =   x1 x2     x_{STDIM-1}
-  // ccorth =    x2     x_{STDIM-1}
+  // ccsp =   x1 x2 ... x_{STDIM-1}
+  // ccsport= x1 x2 ... x_{STDIM-1} (without x_{dir})
   int i;
   long ris, aux;
 
   ris=0;
   aux=1;
-  for(i=0; i<STDIM-2; i++)
+  i=0;
+  
+  // dir ranges from 1 to STDIM-1, so i from 0 to STDIM-2
+  // but last element of ccsport is ccsport[STDIM-3], needs a further check
+  while(i<dir && i<STDIM-2)
      {
-     ris+=ccorth[i]*aux;
-     aux*=geo->d_size[i+2];
+     ris+=ccsport[i]*aux;
+     aux*=geo->d_size[i+1];
+     i++;
      }
 
-  // ris = ccorth[0]
-  //      +ccorth[1]*size[2]
-  //      +ccorth[2]*size[2]*size[3]
+  aux/=geo->d_size[dir];
+
+  while(i<STDIM-2)
+     {
+     aux*=geo->d_size[i+1];
+     ris+=ccsport[i]*aux;
+     i++;
+     }
+  // ris = ccsport[0]
+  //      +ccsport[1]*size[1] (if dir>1)
+  //      +ccsport[2]*size[1]*size[2] (if dir>2)
   //      +...
-  //      +ccorth[STDIM-2]*size[2]*size[3]*...*size[STDIM-2]
+  //      +ccsport[STDIM-3]*size[1]*size[2]*...*size[STDIM-3] (without size[dir])
 
   return ris;
   }
 
-void lexorth_to_cartorth(int *ccorth, long lexorth, Geometry const * const geo)
+void lexsport_to_cartsport(int *ccsport, long lexsport, int dir, Geometry const * const geo)
   {
-  // the index for the spatial cartesian coord. goes from 0 to STDIM-2 hence ccsp[STDIM-1]
+  // the index for the spatial cartesian coord. goes from 0 to STDIM-2 
+  // hence ccsp[STDIM-1] and ccsport[STDIM-2]
   // cc   = t x1 x2 ... x_{STDIM-1}
-  // ccsp =   x1 x2     x_{STDIM-1}
+  // ccsp =   x1 x2 ... x_{STDIM-1}
+  // ccsport= x1 x2 ... x_{STDIM-1} (without x_{dir})
 
   int i;
   long aux[STDIM-2];
 
   aux[0]=1;
-  for(i=1; i<STDIM-2; i++)
-     {
-     aux[i]=aux[i-1]*geo->d_size[i+1];
-     }
+  i=1;
+
+  while(i<dir && i<STDIM-2)
+    {
+    aux[i]=aux[i-1]*geo->d_size[i];
+    i++;
+    }
+
+  while(i<STDIM-2)
+    {
+    aux[i]=aux[i-1]*geo->d_size[i+1];
+    i++;
+    }
   // aux[0]=1
-  // aux[1]=size[2]
-  // aux[2]=size[2]*size[3]
+  // aux[1]=size[1] (if dir>1)           aux[1]=size[2] (if dir=1)
+  // aux[2]=size[1]*size[2] (if dir>2)   aux[2]=size[2]*size[3] (if dir=1)   aux[2]=size[1]*size[3] (if dir=2)
   // ...
-  // aux[STDIM-3]=size[2]*size[3]*...*size[STDIM-3]
+  // aux[STDIM-3]=size[1]*size[2]*...*size[STDIM-3] (without size[dir])
 
   for(i=STDIM-3; i>=0; i--)
      {
-     ccorth[i]=(int) (lexorth/aux[i]);
-     lexorth-=aux[i]*ccorth[i];
+     ccsport[i]=(int) (lexsport/aux[i]);
+     lexsport-=aux[i]*ccsport[i];
      }
   }
 
+long cartsport_to_lexeosport(int const * const ccsport, int dir, Geometry const * const geo)
+  {
+  long lexsport;
+  int i, eo;
+
+  lexsport=cartsport_to_lexsport(ccsport, dir, geo);
+
+  eo=0;
+  for(i=0; i<STDIM-2; i++)
+     {
+     eo+=ccsport[i];
+     }
+
+  if(eo % 2==0)
+    {
+    return lexsport/2;
+    }
+  else
+    {
+    return (lexsport + (int) (geo->d_space_vol/geo->d_size[dir]))/2;
+    }
+  }
+
+void lexeosport_to_cartsport(int *ccsport, long lexeosport, int dir, Geometry const * const geo)
+  {
+  long lexsport;
+  int i, eo, space_vol_ort;
+
+  space_vol_ort=(int) (geo->d_space_vol/geo->d_size[dir]);
+
+  if(space_vol_ort % 2 == 0)
+    {
+    if(lexeosport < space_vol_ort/2)
+      {
+      lexsport=2*lexeosport;
+      }
+    else
+      {
+      lexsport=2*(lexeosport - space_vol_ort/2);
+      }
+    lexsport_to_cartsport(ccsport, lexsport, dir, geo);
+
+    eo=0;
+    for(i=0; i<STDIM-2; i++)
+       {
+       eo+=ccsport[i];
+       }
+    eo = eo % 2;
+
+    if( (eo == 0 && lexeosport >= space_vol_ort/2) ||
+        (eo == 1 && lexeosport < space_vol_ort/2) )
+      {
+      lexsport+=1;
+      lexsport_to_cartsport(ccsport, lexsport, dir, geo);
+      }
+    }
+  else
+    {
+    if(lexeosport <= space_vol_ort/2)
+      {
+      lexsport=2*lexeosport;
+      }
+    else
+      {
+      lexsport=2*(lexeosport - space_vol_ort/2)-1;
+      }
+    lexsport_to_cartsport(ccsport, lexsport, dir, geo);
+    }
+  }
+
+// spatial lexicographic index -> spatial lexicographic eo index
+long lexsport_to_lexeosport(long lexsport, int dir, Geometry const * const geo)
+  {
+  int ccsport[STDIM-2];
+
+  lexsport_to_cartsport(ccsport, lexsport, dir, geo);
+
+  return cartsport_to_lexeosport(ccsport, dir, geo);
+  }
+
+//  spatial lexicographic eo index -> spatial lexicographic index
+long lexeosport_to_lexsport(long lexeosport, int dir, Geometry const * const geo)
+  {
+  int ccsport[STDIM-2];
+
+  lexeosport_to_cartsport(ccsport, lexeosport, dir, geo);
+
+  return cartsport_to_lexsport(ccsport, dir, geo);
+  }
+
+long lexeosport_and_par_to_lexeosp(long lexeosport, int par, int dir, Geometry const * const geo)
+  {
+  int ccsp[STDIM-1], i;
+
+  // this gives an array ccsp=[undefined, x_1, x_2, ... x_{STDIM-1}] (without x_{dir})
+  lexeosport_to_cartsport(ccsp+1, lexeosport, dir, geo);
+
+  // moving ccsp[1] to ccsp[0] until ccsp[dir-1] is moved to ccsp[dir-2]
+  // x_{dir}=par should be stored in ccsp[dir-1], since ccsp[0]=x_1, ccsp[1]=x_2, etc.
+  i=0;
+
+  while(i<dir-1)
+    {
+    ccsp[i]=ccsp[i+1];
+    i++;
+    }
+  ccsp[dir-1]=par;
+
+  return cartsp_to_lexeosp(ccsp, geo);
+  }
+
+void lexeosp_to_lexeosport_and_par(long *lexeosport, int *par, long lexeosp, int dir, Geometry const * const geo)
+  {
+  int i, ccsp[STDIM-1], ccsport[STDIM-2];
+
+  lexeosp_to_cartsp(ccsp, lexeosp, geo);
+
+  // x_{dir}=par should be stored in ccsp[dir-1], since ccsp[0]=x_1, ccsp[1]=x_2, etc.
+  *par=ccsp[dir-1];
+  
+  i=0;
+
+  while(i<dir-1 && i<STDIM-2)
+     {
+     ccsport[i]=ccsp[i];
+     i++;
+     }
+
+  while(i<STDIM-2)
+     {
+     ccsport[i]=ccsp[i+1];
+     i++;
+     }
+
+  *lexeosport=cartsport_to_lexeosport(ccsport, dir, geo);  
+  }
+/*
 long lexeoorth_and_dir_to_lexeosp(long lexeoorth, int dir, Geometry const * const geo)
   {
   return lexeoorth*dir*(geo->d_size[1]);
@@ -696,4 +968,7 @@ void lexeosp_to_lexeoorth_and_dir(long *lexeoorth, int *dir, long lexeosp, Geome
   *lexeoorth=ccorth; // da cambiare
   *lexeoorth=cartsp_to_lexeosp(ccsp, geo); // da cambiare
   }
+
+  */
+#endif
 #endif

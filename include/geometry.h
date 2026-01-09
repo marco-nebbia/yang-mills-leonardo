@@ -14,9 +14,14 @@ typedef struct Geometry {
 
    long **d_nnp;      // d_nnp[r][i] = next neighbour (on the local lattice) in dir.  i of the site r
    long **d_nnm;      // d_nnm[r][i] = next neighbour (on the local lattice) in dir. -i of the site r
+
    int *d_timeslice;  // d_timeslice[r]  = time component of r
    long *d_spacecomp; // d_spacecomp[r]  = space component of r
    long **d_tsp;      // d_tsp[t][rsp] = r such that d_timeslice[r]=t and d_spacecomp[r]=rsp
+
+   int **d_parslice;  // d_parslice[rsp][i] = i-th direction component of rsp (1<=i<=STDIM)
+   long **d_ortcomp;  // d_ortcomp[rsp][i] = orthogonal component to i-th direction of rsp (1<=i<=STDIM)
+   long ***d_parort;  // d_parort[par][rsport][i] = rsp such that d_parslice[rsp][i]=par and d_ortcomp[rsp][i]=rsport
 } Geometry;
 
 // these are the functions to be used in switching between different indices
@@ -26,13 +31,17 @@ extern long (*lex_to_si)(long lex, Geometry const * const geo);          // lexi
 extern long (*si_to_lex)(long si, Geometry const * const geo);           // lexicographic -> single index
 extern long (*sisp_and_t_to_si_compute)(long sisp, int t, Geometry const * const geo);            // single index spatial and time -> single index tot
 extern void (*si_to_sisp_and_t_compute)(long *sisp, int *t, long si, Geometry const * const geo); // single index tot -> single index spatial and time
+#if STDIM > 2
+extern long (*sisport_and_par_to_sisp_compute)(long sisport, int par, int dir, Geometry const * const geo);
+extern void (*sisp_to_sisport_and_par_compute)(long *sisport, int *par, long sisp, int dir, Geometry const * const geo);
+#endif
 
 // general functions
 void init_geometry(Geometry *geo, int insize[STDIM]);
 void free_geometry(Geometry *geo);
 
-// check if link is on border face of STDIM=1
-bool check_link_on_border(Geometry const * const geo, long lexeo, long j); 
+// check if link is on border face of 0-th dimension
+int check_link_on_border(Geometry const * const geo, long lexeo, long j); 
 
 // next neighbour in + direction
 inline long nnp(Geometry const * const geo, long r, int i)
@@ -59,6 +68,17 @@ inline void si_to_sisp_and_t(long *sisp, int *t, Geometry const * const geo, lon
   *t=geo->d_timeslice[si];
   }
 
+inline long sisport_and_par_to_sisp(Geometry const * const geo, long sisport, int par, int dir)
+  {
+  return geo->d_parort[par][sisport][dir];
+  }
+
+inline void sisp_to_sisport_and_par(long *sisport, int *par, int dir, Geometry const * const geo, long sisp)
+  {
+  *sisport=geo->d_ortcomp[sisp][dir];
+  *par=geo->d_parslice[sisp][dir];
+  }
+ 
 // for debug
 void test_geometry(Geometry const * const geo);
 
@@ -85,16 +105,18 @@ long lexeosp_to_lexsp(long lexeosp, Geometry const * const geo);   //  spatial l
 long lexeosp_and_t_to_lexeo(long lexeosp, int t, Geometry const * const geo);    // lexicographic eo spatial and time -> lexicographic eo index
 void lexeo_to_lexeosp_and_t(long *lexeosp, int *t, long lexeo, Geometry const * const geo); // lex. eo index -> lex. eo spatial and t
 
-long cartorth_to_lexorth(int const * const ccorth, Geometry const * const geo); // spatial cartesian coordinates -> spatial lexicographic index
-void lexorth_to_cartorth(int *ccorth, long lexorth, Geometry const * const geo);  // spatial lexicographic index -> spatial cartesian coordinates
+#if STDIM > 2
+long cartsport_to_lexsport(int const * const ccsport, int dir, Geometry const * const geo); // spatial cartesian coordinates -> spatial lexicographic index
+void lexsport_to_cartsport(int *ccsport, long lexsport, int dir, Geometry const * const geo);  // spatial lexicographic index -> spatial cartesian coordinates
 
-long cartorth_to_lexeoorth(int const * const ccorth, Geometry const * const geo);  // spatial cartesian coordinates -> spatial lexicographic eo index
-void lexeoorth_to_cartorth(int *ccorth, long lexeoorth, Geometry const * const geo); // spatial lexicographic eo index -> spatial cartesian coordinates
+long cartsport_to_lexeosport(int const * const ccsport, int dir, Geometry const * const geo);  // spatial cartesian coordinates -> spatial lexicographic eo index
+void lexeosport_to_cartsport(int *ccsport, long lexeosport, int dir, Geometry const * const geo); // spatial lexicographic eo index -> spatial cartesian coordinates
 
-long lexorth_to_lexeoorth(long lexorth, Geometry const * const geo);     //  spatial lexicographic index -> spatial lexicographic eo index
-long lexeoorth_to_lexorth(long lexeoorth, Geometry const * const geo);   //  spatial lexicographic eo index -> spatial lexicographic index
+long lexsport_to_lexeosport(long lexsport, int dir, Geometry const * const geo);
+long lexeosport_to_lexsport(long lexeosport, int dir, Geometry const * const geo);
 
-long lexeoorth_and_dir_to_lexeosp(long lexeosp, int dir, Geometry const * const geo);
-void lexeosp_to_lexeoorth_and_dir(long *lexeoorth, int *dir, long lexeosp, Geometry const * const geo);
+long lexeosport_and_par_to_lexeosp(long lexeosport, int par, int dir, Geometry const * const geo);
+void lexeosp_to_lexeosport_and_par(long *lexeosport, int *par, long lexeosp, int dir, Geometry const * const geo);
+#endif
 
 #endif
