@@ -43,7 +43,8 @@ void init_gauge_conf(Gauge_Conf *GC, Geometry const * const geo, GParam const * 
   #endif
   
   // to check if we are on the face with Dirichlet boundary condition
-  bool check = false; 
+  // 0 <-> false, 1 <-> true
+  int check = 0; 
 
   // initialize lattice
   if(param->d_start==0) // ordered start
@@ -60,7 +61,7 @@ void init_gauge_conf(Gauge_Conf *GC, Geometry const * const geo, GParam const * 
           #if DIRICHLET_MODE == 1
           check=check_link_on_border(geo, r, j);
 
-          if(check==true) 
+          if(check==1) 
             {
               one(&(GC->lattice[r][j])); // gauge variable is 1 on border
               continue;  // next loop iteration
@@ -89,7 +90,7 @@ void init_gauge_conf(Gauge_Conf *GC, Geometry const * const geo, GParam const * 
 
           check=check_link_on_border(geo, r, j);
 
-          if(check==true) 
+          if(check==1) 
             {
               one(&(GC->lattice[r][j])); // gauge variable is 1 on border
               continue;  // next loop iteration

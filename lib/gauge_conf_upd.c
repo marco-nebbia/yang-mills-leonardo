@@ -902,7 +902,12 @@ void update(Gauge_Conf * GC,
    {
    long r;
    int j, dir;
-   bool check=false;
+   
+   // to check if we are on the face with Dirichlet boundary condition
+   // 0 <-> false, 1 <-> true
+   int check;
+
+   check=0;
 
    // heatbath
    for(dir=0; dir<STDIM; dir++)
@@ -920,7 +925,7 @@ void update(Gauge_Conf * GC,
          {
          #if DIRICHLET_MODE == 1
          check=check_link_on_border(geo, r, dir);
-         if(check==true) continue;
+         if(check==1) continue;
          #endif
 
          heatbath(GC, geo, param, r, dir);
@@ -933,7 +938,7 @@ void update(Gauge_Conf * GC,
          {
          #if DIRICHLET_MODE == 1
          check=check_link_on_border(geo, r, dir);
-         if(check==true) continue;
+         if(check==1) continue;
          #endif
 
          heatbath(GC, geo, param, r, dir);
@@ -956,7 +961,7 @@ void update(Gauge_Conf * GC,
             {
             #if DIRICHLET_MODE == 1
             check=check_link_on_border(geo, r, dir);
-            if(check==true) continue;
+            if(check==1) continue;
             #endif
 
             overrelaxation(GC, geo, param, r, dir);
@@ -969,7 +974,7 @@ void update(Gauge_Conf * GC,
             {
             #if DIRICHLET_MODE == 1
             check=check_link_on_border(geo, r, dir);
-            if(check==true) continue;
+            if(check==1) continue;
             #endif
 
             overrelaxation(GC, geo, param, r, dir);
