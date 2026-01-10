@@ -275,6 +275,67 @@ void plaquette(Gauge_Conf const * const GC,
    *plaqt=pt;
    }
 
+// compute the mean plaquettes with normal vector
+// parallel or orthogonal to time direction for a
+// specific slice of the lattice 
+void plaquette_slice_time(Gauge_Conf const * const GC,
+                          Geometry const * const geo,
+                          int slice,
+                          double *plaqpar,
+                          double *plaqort)
+   {
+   long r, rsp;
+   double ppar, port;
+
+   ppar=0.;
+   port=0.;
+   
+   #ifdef DEBUG
+   // check if site is inside the lattice
+   if(slice>=(geo->d_size[0]))
+      {
+      fprintf(stderr, "Slice outside lattice: %d >= %d (%s, %d)\n", slice, geo->d_size[0], __FILE__, __LINE__);
+      exit(EXIT_FAILURE);
+      }
+   #endif
+
+   int i,j;
+
+   for(rsp=0; rsp<(geo->d_space_vol); rsp++)
+      {
+      r=sisp_and_t_to_si(geo, rsp, slice);
+      
+      i=0;
+      for(j=1; j<STDIM; j++)
+         {
+         ppar+=plaquettep(GC, geo, r, i, j);
+         }
+     
+      for(i=1; i<STDIM; i++)
+         {
+         for(j=i+1; j<STDIM; j++)
+            {
+            port+=plaquettep(GC, geo, r, i, j);
+            }
+         }
+      }
+   
+   if(STDIM>2)
+     {
+     port*=geo->d_inv_space_vol;
+     port/=((double) (STDIM-1)*(STDIM-2)/2);
+     }
+   else
+     {
+     port=0.0;
+     }
+
+   ppar*=geo->d_inv_space_vol;
+   ppar/=((double) STDIM-1);
+
+   *plaqpar=ppar;
+   *plaqort=port;
+   }
 
 // compute the clover discretization of
 // sum_{\mu\nu}  Tr(F_{\mu\nu}F_{\mu\nu})/2
@@ -485,18 +546,23 @@ void polyakov_fixed_site(Gauge_Conf const * const GC,
    }
 
 void polyakov_horizontal_fixed_site(Gauge_Conf const * const GC, 
-                         Geometry const * const geo,
-                         long r,
-                         int dir,
-                         double *repoly,
-                         double *impoly)
+                                    Geometry const * const geo,
+                                    long r,
+                                    int dir,
+                                    double *repoly,
+                                    double *impoly)
    {
    #ifdef DEBUG
    if(dir>STDIM)
       {
-      fprintf(stderr, "Direction of horizontal Polyakov loop is greater than space-time dimensions\n", __FILE__, __LINE__);
+      fprintf(stderr, "Direction of horizontal Polyakov loop is greater than space-time dimensions! (%s, %d)\n", __FILE__, __LINE__);
       exit(EXIT_FAILURE);
       }
+   else if(dir==0)
+      {
+      fprintf(stderr, "Direction of horizontal Polyakov loop is time direction! (%s, %d)\n", __FILE__, __LINE__);
+      exit(EXIT_FAILURE);
+      }   
    #endif
 
    // initialize gauge matrix and coordinates
@@ -657,8 +723,8 @@ void polyakov_for_tracedef(Gauge_Conf const * const GC,
    free(imp);
    }
 
-// product of two Polyakov loops in the direction of
-// the Dirichlet faces in the bulk of the lattice
+// product of two Polyakov loops in the x1
+// direction in the bulk of the lattice
 void polyakov_product_in_bulk_dir1(Gauge_Conf const * const GC,
                               Geometry const * const geo,
                               int d,
@@ -945,8 +1011,7 @@ void polyakov_product_in_bulk_dir2(Gauge_Conf const * const GC,
    *im=improd;
    }
 
-// product of two horizontal Polyakov loops that
-// start from the Dirichlet faces 
+// product of two horizontal Polyakov loops 
 void polyakov_product_horizontal(Gauge_Conf const * const GC,
                               Geometry const * const geo,
                               int d,
@@ -1089,145 +1154,207 @@ void polyakov_product_horizontal(Gauge_Conf const * const GC,
    *im=improd;
    }
 
-// compute the wilson loop of size R x T on border
-// where Dirichlet boundary conditions are applied
-void wilson_loop_dirichlet(Gauge_Conf const * const GC,
-                             Geometry const * const geo,
-                             int R,
-                             int T,
-                             double *re,
-                             double *im)
+// compute the Wilson loop of dimensions d1*d2 on directions (i,j)
+// starting from lattice site r
+void wilson_fixed_site(Gauge_Conf const * const GC,
+                       Geometry const * const geo,
+                       long r,
+                       int d_i,
+                       int d_j,
+                       int i,
+                       int j,
+                       double *re,
+                       double *im)
    {
-   int cartcoord[STDIM];
-   long r;
    GAUGE_GROUP matrix;
+   int x_i, x_j;
+   double rewilson, imwilson;
 
-   double rewilson;
-   double imwilson;
+   #ifdef DEBUG
+   if(i>=STDIM)
+      {
+      fprintf(stderr, "Spatial direction chosen for the Wilson loop greater than STDIM! %d>=%d (%s, %d)\n", i, STDIM, __FILE__, __LINE__);
+      exit(EXIT_FAILURE);
+      }
+   if(j>=STDIM)
+      {
+      fprintf(stderr, "Spatial direction chosen for the Wilson loop greater than STDIM! %d>=%d (%s, %d)\n", j, STDIM, __FILE__, __LINE__);
+      exit(EXIT_FAILURE);
+      }
+   if(d_i>geo->d_size[i])
+      {
+      fprintf(stderr, "Wilson loop size exceeds corresponding lattice size! %d>%d (%s, %d)\n", d_i, geo->d_size[i], __FILE__, __LINE__);
+      exit(EXIT_FAILURE);
+      }
+   if(d_j>geo->d_size[j])
+      {
+      fprintf(stderr, "Wilson loop size exceeds corresponding lattice size! %d>%d (%s, %d)\n", d_j, geo->d_size[j], __FILE__, __LINE__);
+      exit(EXIT_FAILURE);
+      }
+   #endif
 
+   one(&matrix);
+
+   // first horizontal product
+   for(x_i=0; x_i<d_i; x_i++)
+            {
+            times_equal(&matrix, &(GC->lattice[r][i]));
+            r=nnp(geo, r, i);
+            }
+        
+   // first vertical product
+   for(x_j=0; x_j<d_j; x_j++)
+            {
+            times_equal(&matrix, &(GC->lattice[r][j]));
+            r=nnp(geo, r, j);
+            }
+         
+   // second horizontal product, reverse order so multiply for the adjoint
+   for(x_i=d_i-1; x_i>=0; x_i--)
+            {
+            // we move first this time because the SU(2) gauge variable
+            // U[r][-i] corresponds to the adjoint of the previous U^{dag}[r-1][i]
+            r=nnm(geo, r, i);
+            times_equal(&matrix, &(GC->lattice[r][i]));            
+            }
+        
+   // second vertical product, reverse order so multiply for the adjoint
+   for(x_j=d_j-1; x_j>=0; x_j--)
+            {
+            // we move first this time because the SU(2) gauge variable
+            // U[r][-j] corresponds to the adjoint of the previous U^{dag}[r-1][j]
+            r=nnm(geo, r, j);
+            times_equal_dag(&matrix, &(GC->lattice[r][j]));
+            }
+
+   *re=retr(&matrix);
+   *im=imtr(&matrix);
+   }
+
+// compute the mean Wilson loop of size R x T 
+// where R is a distance in direction dir
+// and T is a distance in time direction
+// on a whole slice in time dimension
+void wilson_slice_time_dir(Gauge_Conf const * const GC,
+                           Geometry const * const geo,
+                           int R,
+                           int T,
+                           int slice,
+                           int dir,
+                           double *re,
+                           double *im)
+   {
+   long r, rsp;
+   double rewilson, imwilson, rewil_memo, imwil_memo;
+
+   #ifdef DEBUG
+   // check if direction is not greater than STDIM or null
+   if(dir>=STDIM)
+      {
+      fprintf(stderr, "Spatial direction chosen for the Wilson loop greater than STDIM! %d>=%d (%s, %d)\n", dir, STDIM, __FILE__, __LINE__);
+      exit(EXIT_FAILURE);
+      }
+   else if(dir==0)
+      {
+      fprintf(stderr, "Spatial direction chosen for the Wilson loop is actually time dimension! dir=%d (%s, %d)\n", dir, __FILE__, __LINE__);
+      exit(EXIT_FAILURE);
+      }
+   // check if slice to compute Wilson loop on
+   // is inside the lattice
+   if(slice>=(geo->d_size[0]))
+      {
+      fprintf(stderr, "Time slice to compute Wilson loop on greater than time size! %d>=%d (%s, %d)\n", slice, (geo->d_size[0]), __FILE__, __LINE__);
+      exit(EXIT_FAILURE);
+      }
    // check if sizes of Wilson loop are smaller
    // of the corresponding lattice sizes
-   if(R>(geo->d_size[1]))
+   if(R>(geo->d_size[dir]))
       {
-      fprintf(stderr, "Spatial size R of Wilson loop greater than corresponding lattice size! (%s, %d)\n", __FILE__, __LINE__);
+      fprintf(stderr, "Spatial size R of Wilson loop greater than corresponding spatial lattice size! %d>%d (%s, %d)\n", R, (geo->d_size[dir]), __FILE__, __LINE__);
       exit(EXIT_FAILURE);
       }
-   if(T>(geo->d_size[0]))
+   if((slice+T)>(geo->d_size[0]))
       {
-      fprintf(stderr, "Temporal size T of Wilson loop greater than corresponding lattice size! (%s, %d)\n", __FILE__, __LINE__);
+      fprintf(stderr, "Temporal size T of Wilson loop crossing the corresponding lattice border! %d+%d>%d (%s, %d)\n", T, slice, geo->d_size[0], __FILE__, __LINE__);
       exit(EXIT_FAILURE);
       }
-
-   // initialize on the lattice border
-   cartcoord[1]=0;
+   #endif
 
    rewilson=0.;
    imwilson=0.;
 
-   #if STDIM == 3
-   for(int x0=0; x0<(geo->d_size[0]); x0++)
+   rewil_memo=0.;
+   imwil_memo=0.;
+
+   for(rsp=0; rsp<(geo->d_space_vol); rsp++)
       {
-      cartcoord[0]=x0;
-
-      for(int x2=0; x2<(geo->d_size[2]); x2++)
-         {
-         cartcoord[2]=x2;
-         r=cart_to_si(cartcoord, geo);
+      r=sisp_and_t_to_si(geo, rsp, slice);
       
-         // initialize gauge matrix to 1
-         one(&matrix);
+      wilson_fixed_site(GC, geo, r, R, T, dir, 0, &rewilson, &imwilson);
 
-         // first horizontal product
-         for(int space=0; space<R; space++)
-            {
-            times_equal(&matrix, &(GC->lattice[r][1]));
-
-            r=nnp(geo, r, 1);
-            }
-
-         // first vertical product
-         for(int time=0; time<T; time++)
-            {
-            times_equal(&matrix, &(GC->lattice[r][0]));
-
-            r=nnp(geo, r, 0);
-            }
-
-         // second horizontal product (adjoint)
-         for(int space=0; space<R; space++)
-            {
-            // we move first this time because the SU(2) gauge variable
-            // U[r][-1] corresponds to the adjoint of the previous U^{dag}[r-1][1]
-            r=nnm(geo, r, 1);
-
-            times_equal_dag(&matrix, &(GC->lattice[r][1]));
-            }
-
-         // moving back to original cartcoord[0]
-         cartcoord[0]=x0;
-
-         rewilson+=retr(&matrix);
-         imwilson+=imtr(&matrix);
-         }
+      rewil_memo+=rewilson;
+      imwil_memo+=imwilson;
       }
 
-   *re=rewilson/((geo->d_size[0])*(geo->d_size[2]));
-   *im=imwilson/((geo->d_size[0])*(geo->d_size[2]));
-   #elif STDIM == 4
-   for(int x0=0; x0<(geo->d_size[0]); x0++)
+   *re=rewil_memo*(geo->d_inv_space_vol);
+   *im=imwil_memo*(geo->d_inv_space_vol);
+   }
+
+// compute the mean Wilson loop of size R x T
+// on every spatial direction
+// where R is a distance in space
+// and T is a distance in time 
+// on a whole slice in time dimension
+void wilson_slice_time(Gauge_Conf const * const GC,
+                       Geometry const * const geo,
+                       int R,
+                       int T,
+                       int slice,
+                       double *re,
+                       double *im)
+   {
+   double rewilson, imwilson, rewil_memo, imwil_memo;
+
+   #ifdef DEBUG
+   // check if slice to compute Wilson loop on is inside the lattice
+   if(slice>=(geo->d_size[0]))
       {
-      cartcoord[0]=x0;
-
-      for(int x2=0; x2<(geo->d_size[2]); x2++)
-         {
-         cartcoord[2]=x2;
-
-         for(int x3=0; x3<(geo->d_size[3]); x3++)
-            {
-            cartcoord[3]=x3;
-            r=cart_to_si(cartcoord, geo);
-      
-            // initialize gauge matrix to 1
-            one(&matrix);
-
-            // first horizontal product
-            for(int space=0; space<R; space++)
-               {
-               times_equal(&matrix, &(GC->lattice[r][1]));
-
-               r=nnp(geo, r, 1);
-               }
-
-            // first vertical product
-            for(int time=0; time<T; time++)
-               {
-               times_equal(&matrix, &(GC->lattice[r][0]));
-
-               r=nnp(geo, r, 0);
-               }
-
-            // second horizontal product (adjoint)
-            for(int space=0; space<R; space++)
-               {
-               // we move first this time because the SU(2) gauge variable
-               // U[r][-1] corresponds to the adjoint of the previous U^{dag}[r-1][1]
-               r=nnm(geo, r, 1);
-
-               times_equal_dag(&matrix, &(GC->lattice[r][1]));
-               }
-
-            // moving back to original cartcoord[0]
-            cartcoord[0]=x0;
-
-            rewilson+=retr(&matrix);
-            imwilson+=imtr(&matrix);
-            }
-         }
+      fprintf(stderr, "Time slice to compute Wilson loop on greater than time size! %d>=%d (%s, %d)\n", slice, (geo->d_size[0]), __FILE__, __LINE__);
+      exit(EXIT_FAILURE);
       }
-
-   *re=rewilson/((geo->d_size[0])*(geo->d_size[2])*(geo->d_size[3]));
-   *im=imwilson/((geo->d_size[0])*(geo->d_size[2])*(geo->d_size[3]));
+   // check if sizes of Wilson loop are smaller
+   // of the corresponding lattice sizes
+   for(int dir=1; dir<STDIM; i++)
+      {
+      if(R>(geo->d_size[dir]))
+      {
+         fprintf(stderr, "Spatial size R of Wilson loop greater than corresponding spatial lattice size! %d>%d (%s, %d)\n", R, (geo->d_size[dir]), __FILE__, __LINE__);
+         exit(EXIT_FAILURE);
+      }
+      }
+   if((slice+T)>(geo->d_size[0]))
+      {
+      fprintf(stderr, "Temporal size T of Wilson loop crossing the corresponding lattice border! %d+%d>%d (%s, %d)\n", T, slice, geo->d_size[0], __FILE__, __LINE__);
+      exit(EXIT_FAILURE);
+      }
    #endif
+
+   rewilson=0.;
+   imwilson=0.;
+
+   rewil_memo=0.;
+   imwil_memo=0.;
+
+   for(int i=1; i<STDIM; i++)
+      {
+      wilson_slice_time_dir(GC, geo, R, T, slice, i, &rewilson, &imwilson);
+
+      rewil_memo+=rewilson;
+      imwil_memo+=imwilson;
+      }
+   
+   *re=rewil_memo/((int) (STDIM-1));
+   *im=imwil_memo/((int) (STDIM-1));
    }
 
 // compute the local topological charge at point r
