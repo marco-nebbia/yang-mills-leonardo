@@ -1,8 +1,6 @@
 #ifndef GEOMETRY_C
 #define GEOMETRY_C
 
-#define DEBUG
-
 #include"../include/macro.h"
 
 #include<stdio.h>
@@ -108,39 +106,53 @@ void init_geometry(Geometry *geo, int insize[STDIM])
      }
 
      
-  err=posix_memalign((void**)&(geo->d_parslice), (size_t)INT_ALIGN, (size_t) geo->d_volume * sizeof(int));
+  err=posix_memalign((void**)&(geo->d_parslice), (size_t)INT_ALIGN, (size_t) geo->d_space_vol * sizeof(int));
   if(err!=0)
     {
     fprintf(stderr, "Problems in allocating the geometry! (%s, %d)\n", __FILE__, __LINE__);
     exit(EXIT_FAILURE);
     }
-  err=posix_memalign((void**)&(geo->d_ortcomp), (size_t)INT_ALIGN, (size_t) geo->d_volume * sizeof(long));
+  err=posix_memalign((void**)&(geo->d_ortcomp), (size_t)INT_ALIGN, (size_t) geo->d_space_vol * sizeof(long));
   if(err!=0)
     {
     fprintf(stderr, "Problems in allocating the geometry! (%s, %d)\n", __FILE__, __LINE__);
     exit(EXIT_FAILURE);
     }
+  for(r=0; r<(geo->d_space_vol); r++)
+    {
+    err=posix_memalign((void**)&(geo->d_parslice[r]), (size_t)INT_ALIGN, (size_t) (STDIM-1) * sizeof(int));
+    if(err!=0)
+       {
+       fprintf(stderr, "Problems in allocating the geometry! (%s, %d)\n", __FILE__, __LINE__);
+       exit(EXIT_FAILURE);
+       }
+    err=posix_memalign((void**)&(geo->d_ortcomp[r]), (size_t)INT_ALIGN, (size_t) (STDIM-1) * sizeof(long));
+    if(err!=0)
+       {
+       fprintf(stderr, "Problems in allocating the geometry! (%s, %d)\n", __FILE__, __LINE__);
+       exit(EXIT_FAILURE);
+       }
+    }
+  err=posix_memalign((void**)&(geo->d_parort), (size_t)INT_ALIGN, (size_t) (STDIM-1) * sizeof(long *));
   long size_volume_divided_dir;
-  int size_time_times_dir;
   for(i=1; i<STDIM; i++)
-    {    
-    size_time_times_dir=(int) geo->d_size[0]*geo->d_size[i];
+    {
     size_volume_divided_dir=(long) geo->d_space_vol/geo->d_size[i];
-    err=posix_memalign((void**)&(geo->d_parort), (size_t)INT_ALIGN, (size_t) size_time_times_dir * sizeof(long *));
+    err=posix_memalign((void**)&(geo->d_parort[i]), (size_t)INT_ALIGN, (size_t) geo->d_size[i] * sizeof(long *));
     if(err!=0)
       {
       fprintf(stderr, "Problems in allocating the geometry! (%s, %d)\n", __FILE__, __LINE__);
       exit(EXIT_FAILURE);
       }
-    for(r=0; r<geo->d_size[0]*geo->d_size[i]; r++)
-      {
-      err=posix_memalign((void**)&(geo->d_parort[r][i]), (size_t)INT_ALIGN, (size_t) size_volume_divided_dir * sizeof(long));
-      if(err!=0)
+      for(int x_dir=0; x_dir<geo->d_size[i]; x_dir++)
         {
-        fprintf(stderr, "Problems in allocating the geometry! (%s, %d)\n", __FILE__, __LINE__);
-        exit(EXIT_FAILURE);
+        err=posix_memalign((void**)&(geo->d_parort[i][x_dir]), (size_t)INT_ALIGN, (size_t) size_volume_divided_dir * sizeof(long));
+        if(err!=0)
+          {
+          fprintf(stderr, "Problems in allocating the geometry! (%s, %d)\n", __FILE__, __LINE__);
+          exit(EXIT_FAILURE);
+          }
         }
-      }
     }
   
 
@@ -189,7 +201,7 @@ void init_geometry(Geometry *geo, int insize[STDIM])
       sisp_to_sisport_and_par_compute(&rm, &valuem, rp, j, geo);
       geo->d_ortcomp[rp][j]=rm;
       geo->d_parslice[rp][j]=valuem;
-      geo->d_parort[valuem][rm][j]=rp;
+      geo->d_parort[j][valuem][rm]=rp;
       }
      }
 

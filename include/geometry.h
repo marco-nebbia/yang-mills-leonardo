@@ -21,7 +21,7 @@ typedef struct Geometry {
 
    int **d_parslice;  // d_parslice[rsp][i] = i-th direction component of rsp (1<=i<=STDIM)
    long **d_ortcomp;  // d_ortcomp[rsp][i] = orthogonal component to i-th direction of rsp (1<=i<=STDIM)
-   long ***d_parort;  // d_parort[par][rsport][i] = rsp such that d_parslice[rsp][i]=par and d_ortcomp[rsp][i]=rsport
+   long ***d_parort;  // d_parort[i][par][rsport] = rsp such that d_parslice[rsp][i]=par and d_ortcomp[rsp][i]=rsport
 } Geometry;
 
 // these are the functions to be used in switching between different indices
@@ -70,7 +70,7 @@ inline void si_to_sisp_and_t(long *sisp, int *t, Geometry const * const geo, lon
 
 inline long sisport_and_par_to_sisp(Geometry const * const geo, long sisport, int par, int dir)
   {
-  return geo->d_parort[par][sisport][dir];
+  return geo->d_parort[dir][par][sisport];
   }
 
 inline void sisp_to_sisport_and_par(long *sisport, int *par, int dir, Geometry const * const geo, long sisp)
