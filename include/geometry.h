@@ -2,7 +2,6 @@
 #define GEOMETRY_H
 
 #include"macro.h"
-#include<stdbool.h>  // For boolean data type (bool, true, false)
 
 typedef struct Geometry {
    int d_size[STDIM];
@@ -17,10 +16,10 @@ typedef struct Geometry {
 
    int *d_timeslice;  // d_timeslice[r]  = time component of r
    long *d_spacecomp; // d_spacecomp[r]  = space component of r
-   long **d_tsp;      // d_tsp[t][rsp] = r such that d_timeslice[r]=t and d_spacecomp[r]=rsp
+   long **d_tsp;      // d_tsp[t][rsp]   = r such that d_timeslice[r]=t and d_spacecomp[r]=rsp
 
-   int **d_parslice;  // d_parslice[rsp][i] = i-th direction component of rsp (1<=i<=STDIM)
-   long **d_ortcomp;  // d_ortcomp[rsp][i] = orthogonal component to i-th direction of rsp (1<=i<=STDIM)
+   int **d_parslice;  // d_parslice[rsp][i]       = i-th direction component of rsp (1<=i<=STDIM)
+   long **d_ortcomp;  // d_ortcomp[rsp][i]        = orthogonal component to i-th direction of rsp (1<=i<=STDIM)
    long ***d_parort;  // d_parort[i][par][rsport] = rsp such that d_parslice[rsp][i]=par and d_ortcomp[rsp][i]=rsport
 } Geometry;
 
@@ -32,8 +31,8 @@ extern long (*si_to_lex)(long si, Geometry const * const geo);           // lexi
 extern long (*sisp_and_t_to_si_compute)(long sisp, int t, Geometry const * const geo);            // single index spatial and time -> single index tot
 extern void (*si_to_sisp_and_t_compute)(long *sisp, int *t, long si, Geometry const * const geo); // single index tot -> single index spatial and time
 #if STDIM > 2
-extern long (*sisport_and_par_to_sisp_compute)(long sisport, int par, int dir, Geometry const * const geo);
-extern void (*sisp_to_sisport_and_par_compute)(long *sisport, int *par, long sisp, int dir, Geometry const * const geo);
+extern long (*sisport_and_par_to_sisp_compute)(long sisport, int par, int dir, Geometry const * const geo);              // single index orthogonal and parallel -> single index spatial
+extern void (*sisp_to_sisport_and_par_compute)(long *sisport, int *par, long sisp, int dir, Geometry const * const geo); // single index spatial -> single index orthogonal and parallel
 #endif
 
 // general functions
@@ -102,21 +101,21 @@ void lexeosp_to_cartsp(int *ccsp, long lexeosp, Geometry const * const geo); // 
 long lexsp_to_lexeosp(long lexsp, Geometry const * const geo);     //  spatial lexicographic index -> spatial lexicographic eo index
 long lexeosp_to_lexsp(long lexeosp, Geometry const * const geo);   //  spatial lexicographic eo index -> spatial lexicographic index
 
-long lexeosp_and_t_to_lexeo(long lexeosp, int t, Geometry const * const geo);    // lexicographic eo spatial and time -> lexicographic eo index
+long lexeosp_and_t_to_lexeo(long lexeosp, int t, Geometry const * const geo);               // lexicographic eo spatial and time -> lexicographic eo index
 void lexeo_to_lexeosp_and_t(long *lexeosp, int *t, long lexeo, Geometry const * const geo); // lex. eo index -> lex. eo spatial and t
 
 #if STDIM > 2
-long cartsport_to_lexsport(int const * const ccsport, int dir, Geometry const * const geo); // spatial cartesian coordinates -> spatial lexicographic index
-void lexsport_to_cartsport(int *ccsport, long lexsport, int dir, Geometry const * const geo);  // spatial lexicographic index -> spatial cartesian coordinates
+long cartsport_to_lexsport(int const * const ccsport, int dir, Geometry const * const geo);   // spatial orthogonal cartesian coordinates -> spatial orthogonal lexicographic index
+void lexsport_to_cartsport(int *ccsport, long lexsport, int dir, Geometry const * const geo); // spatial orthogonal lexicographic index -> spatial orthogonal cartesian coordinates
 
-long cartsport_to_lexeosport(int const * const ccsport, int dir, Geometry const * const geo);  // spatial cartesian coordinates -> spatial lexicographic eo index
-void lexeosport_to_cartsport(int *ccsport, long lexeosport, int dir, Geometry const * const geo); // spatial lexicographic eo index -> spatial cartesian coordinates
+long cartsport_to_lexeosport(int const * const ccsport, int dir, Geometry const * const geo);     // spatial orthogonal cartesian coordinates -> spatial orthogonal lexicographic eo index
+void lexeosport_to_cartsport(int *ccsport, long lexeosport, int dir, Geometry const * const geo); // spatial orthogonal lexicographic eo index -> spatial orthogonal cartesian coordinates
 
-long lexsport_to_lexeosport(long lexsport, int dir, Geometry const * const geo);
-long lexeosport_to_lexsport(long lexeosport, int dir, Geometry const * const geo);
+long lexsport_to_lexeosport(long lexsport, int dir, Geometry const * const geo);   // spatial orthogonal lexicographic index -> spatial orthogonal lexicographic eo index
+long lexeosport_to_lexsport(long lexeosport, int dir, Geometry const * const geo); // spatial orthogonal lexicographic eo index -> spatial orthogonal lexicographic index
 
-long lexeosport_and_par_to_lexeosp(long lexeosport, int par, int dir, Geometry const * const geo);
-void lexeosp_to_lexeosport_and_par(long *lexeosport, int *par, long lexeosp, int dir, Geometry const * const geo);
+long lexeosport_and_par_to_lexeosp(long lexeosport, int par, int dir, Geometry const * const geo);                 // lexicographic eo spatial orthogonal and parallel coordinate -> lexicographic eo spatial index
+void lexeosp_to_lexeosport_and_par(long *lexeosport, int *par, long lexeosp, int dir, Geometry const * const geo); // lexicographic eo spatial index -> lexicographic eo spatial orthogonal and parallel coordinate
 #endif
 
 #endif

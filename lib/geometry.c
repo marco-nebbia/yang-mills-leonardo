@@ -251,18 +251,14 @@ void free_geometry(Geometry *geo)
   free(geo->d_tsp);
   }
 
-
 long nnp(Geometry const * const geo, long r, int i);
-
-
 long nnm(Geometry const * const geo, long r, int i);
 
-
 long sisp_and_t_to_si(Geometry const * const geo, long sisp, int t);
-
-
 void si_to_sisp_and_t(long *sisp, int *t, Geometry const * const geo, long si);
 
+long sisport_and_par_to_sisp(Geometry const * const geo, long sisport, int par, int dir);
+void sisp_to_sisport_and_par(long *sisport, int *par, int dir, Geometry const * const geo, long sisp);
 
 void test_geometry(Geometry const * const geo)
   {
@@ -741,6 +737,7 @@ void lexeo_to_lexeosp_and_t(long *lexeosp, int *t, long lexeo, Geometry const * 
   }
 
 #if STDIM > 2
+// spatial orthogonal cartesian coordinates -> spatial orthogonal lexicographic index
 long cartsport_to_lexsport(int const * const ccsport, int dir, Geometry const * const geo)
   {
   // the index for the spatial cartesian coord. goes from 0 to STDIM-2 
@@ -781,6 +778,8 @@ long cartsport_to_lexsport(int const * const ccsport, int dir, Geometry const * 
   return ris;
   }
 
+
+// spatial orthogonal lexicographic index -> spatial orthogonal cartesian coordinates
 void lexsport_to_cartsport(int *ccsport, long lexsport, int dir, Geometry const * const geo)
   {
   // the index for the spatial cartesian coord. goes from 0 to STDIM-2 
@@ -819,6 +818,8 @@ void lexsport_to_cartsport(int *ccsport, long lexsport, int dir, Geometry const 
      }
   }
 
+
+// spatial orthogonal cartesian coordinates -> spatial orthogonal lexicographic eo index
 long cartsport_to_lexeosport(int const * const ccsport, int dir, Geometry const * const geo)
   {
   long lexsport;
@@ -842,6 +843,8 @@ long cartsport_to_lexeosport(int const * const ccsport, int dir, Geometry const 
     }
   }
 
+
+// spatial orthogonal lexicographic eo index -> spatial orthogonal cartesian coordinates
 void lexeosport_to_cartsport(int *ccsport, long lexeosport, int dir, Geometry const * const geo)
   {
   long lexsport;
@@ -889,7 +892,8 @@ void lexeosport_to_cartsport(int *ccsport, long lexeosport, int dir, Geometry co
     }
   }
 
-// spatial lexicographic index -> spatial lexicographic eo index
+
+// spatial orthogonal lexicographic index -> spatial orthogonal lexicographic eo index
 long lexsport_to_lexeosport(long lexsport, int dir, Geometry const * const geo)
   {
   int ccsport[STDIM-2];
@@ -899,7 +903,8 @@ long lexsport_to_lexeosport(long lexsport, int dir, Geometry const * const geo)
   return cartsport_to_lexeosport(ccsport, dir, geo);
   }
 
-//  spatial lexicographic eo index -> spatial lexicographic index
+
+// spatial orthogonal lexicographic eo index -> spatial orthogonal lexicographic index
 long lexeosport_to_lexsport(long lexeosport, int dir, Geometry const * const geo)
   {
   int ccsport[STDIM-2];
@@ -909,6 +914,8 @@ long lexeosport_to_lexsport(long lexeosport, int dir, Geometry const * const geo
   return cartsport_to_lexsport(ccsport, dir, geo);
   }
 
+
+// lexicographic eo spatial orthogonal and parallel coordinate -> lexicographic eo spatial index
 long lexeosport_and_par_to_lexeosp(long lexeosport, int par, int dir, Geometry const * const geo)
   {
   int ccsp[STDIM-1], i;
@@ -930,6 +937,8 @@ long lexeosport_and_par_to_lexeosp(long lexeosport, int par, int dir, Geometry c
   return cartsp_to_lexeosp(ccsp, geo);
   }
 
+
+// lexicographic eo spatial index -> lexicographic eo spatial orthogonal and parallel coordinate
 void lexeosp_to_lexeosport_and_par(long *lexeosport, int *par, long lexeosp, int dir, Geometry const * const geo)
   {
   int i, ccsp[STDIM-1], ccsport[STDIM-2];
@@ -955,37 +964,5 @@ void lexeosp_to_lexeosport_and_par(long *lexeosport, int *par, long lexeosp, int
 
   *lexeosport=cartsport_to_lexeosport(ccsport, dir, geo);  
   }
-/*
-long lexeoorth_and_dir_to_lexeosp(long lexeoorth, int dir, Geometry const * const geo)
-  {
-  return lexeoorth*dir*(geo->d_size[1]);
-  }
-
-void lexeosp_to_lexeoorth_and_dir(long *lexeoorth, int *dir, long lexeosp, Geometry const * const geo)
-  {
-  int ccsp[STDIM-1];
-  
-  lexeosp_to_cartsp(ccsp, lexeosp, geo);
-
-  *dir=ccsp[0];
-
-  #if STDIM == 3
-  int ccorth;
-  ccorth=0;
-  #elif
-  int ccorth[STDIM-2];
-  
-
-  for(int i=0; i<STDIM-2; i++)
-     {
-     ccorth[i]=ccsp[i+1];
-     }
-  
-  #endif
-  *lexeoorth=ccorth; // da cambiare
-  *lexeoorth=cartsp_to_lexeosp(ccsp, geo); // da cambiare
-  }
-
-  */
 #endif
 #endif
