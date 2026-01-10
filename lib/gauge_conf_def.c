@@ -59,8 +59,9 @@ void init_gauge_conf(Gauge_Conf *GC, Geometry const * const geo, GParam const * 
        for(j=0; j<STDIM; j++)
           {
           #if DIRICHLET_MODE == 1
-          check=check_link_on_border(geo, r, j);
-
+          // apply Dirichlet boundary conditions on time faces
+          check=check_link_on_border(geo, r, 0, j);
+          
           if(check==1) 
             {
               one(&(GC->lattice[r][j])); // gauge variable is 1 on border
@@ -87,15 +88,14 @@ void init_gauge_conf(Gauge_Conf *GC, Geometry const * const geo, GParam const * 
        for(j=0; j<STDIM; j++)
           {
           #if DIRICHLET_MODE == 1
-
-          check=check_link_on_border(geo, r, j);
+          // apply Dirichlet boundary conditions on time faces
+          check=check_link_on_border(geo, r, 0, j);
 
           if(check==1) 
             {
               one(&(GC->lattice[r][j])); // gauge variable is 1 on border
               continue;  // next loop iteration
             }
-
           #endif
           rand_matrix(&aux1);
           equal(&(GC->lattice[r][j]), &aux1);

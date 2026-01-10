@@ -924,7 +924,8 @@ void update(Gauge_Conf * GC,
       for(r=0; r<(geo->d_volume)/2; r++)
          {
          #if DIRICHLET_MODE == 1
-         check=check_link_on_border(geo, r, dir);
+         // don't update Dirichlet boundary conditions on time faces
+         check=check_link_on_border(geo, r, 0, dir);
          if(check==1) continue;
          #endif
 
@@ -937,7 +938,8 @@ void update(Gauge_Conf * GC,
       for(r=(geo->d_volume)/2; r<(geo->d_volume); r++)
          {
          #if DIRICHLET_MODE == 1
-         check=check_link_on_border(geo, r, dir);
+         // don't update Dirichlet boundary conditions on time faces
+         check=check_link_on_border(geo, r, 0, dir);
          if(check==1) continue;
          #endif
 
@@ -960,7 +962,8 @@ void update(Gauge_Conf * GC,
          for(r=0; r<(geo->d_volume)/2; r++)
             {
             #if DIRICHLET_MODE == 1
-            check=check_link_on_border(geo, r, dir);
+            // don't update Dirichlet boundary conditions on time faces
+            check=check_link_on_border(geo, r, 0, dir);
             if(check==1) continue;
             #endif
 
@@ -973,7 +976,8 @@ void update(Gauge_Conf * GC,
          for(r=(geo->d_volume)/2; r<(geo->d_volume); r++)
             {
             #if DIRICHLET_MODE == 1
-            check=check_link_on_border(geo, r, dir);
+            // don't update Dirichlet boundary conditions on time faces
+            check=check_link_on_border(geo, r, 0, dir);
             if(check==1) continue;
             #endif
 

@@ -41,7 +41,7 @@ void init_geometry(Geometry *geo, int insize[STDIM]);
 void free_geometry(Geometry *geo);
 
 // check if link is on border face of 0-th dimension
-int check_link_on_border(Geometry const * const geo, long lexeo, long j); 
+int check_link_on_border(Geometry const * const geo, long lexeo, int j, int link); 
 
 // next neighbour in + direction
 inline long nnp(Geometry const * const geo, long r, int i)

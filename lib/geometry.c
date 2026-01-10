@@ -17,8 +17,10 @@ long (*lex_to_si)(long lex, Geometry const * const geo)=&lex_to_lexeo;          
 long (*si_to_lex)(long si, Geometry const * const geo)=&lexeo_to_lex;           // lexicographic -> single index
 long (*sisp_and_t_to_si_compute)(long sisp, int t, Geometry const * const geo)=&lexeosp_and_t_to_lexeo;            // single index spatial and time -> single index tot
 void (*si_to_sisp_and_t_compute)(long *sisp, int *t, long si, Geometry const * const geo)=&lexeo_to_lexeosp_and_t; // single index tot -> single index spatial and time
-long (*sisport_and_par_to_sisp_compute)(long sisport, int par, int dir, Geometry const * const geo)=&lexeosport_and_par_to_lexeosp;
-void (*sisp_to_sisport_and_par_compute)(long *sisport, int *par, long sisp, int dir, Geometry const * const geo)=&lexeosp_to_lexeosport_and_par;
+#if STDIM > 2
+long (*sisport_and_par_to_sisp_compute)(long sisport, int par, int dir, Geometry const * const geo)=&lexeosport_and_par_to_lexeosp;              // single index orthogonal and parallel -> single index spatial
+void (*sisp_to_sisport_and_par_compute)(long *sisport, int *par, long sisp, int dir, Geometry const * const geo)=&lexeosp_to_lexeosport_and_par; // single index spatial -> single index orthogonal and parallel
+#endif
 
 // initialize geometry
 void init_geometry(Geometry *geo, int insize[STDIM])
@@ -191,6 +193,7 @@ void init_geometry(Geometry *geo, int insize[STDIM])
 
   for(r=0; r<geo->d_volume; r++)
      {
+     // compute timeslices and spatial single index
      si_to_sisp_and_t_compute(&rp, &value, r, geo);
      geo->d_spacecomp[r]=rp;
      geo->d_timeslice[r]=value;
@@ -198,6 +201,8 @@ void init_geometry(Geometry *geo, int insize[STDIM])
 
      for(int j=1; j<STDIM; j++)
       {
+      // compute, for every spatial direction, its component
+      // and single index merging all spatial orthogonal components
       sisp_to_sisport_and_par_compute(&rm, &valuem, rp, j, geo);
       geo->d_ortcomp[rp][j]=rm;
       geo->d_parslice[rp][j]=valuem;
@@ -210,16 +215,16 @@ void init_geometry(Geometry *geo, int insize[STDIM])
   #endif
   }  
   
-int check_link_on_border(Geometry const * const geo, long r, long dir)
+int check_link_on_border(Geometry const * const geo, long r, int dir, int dirlink)
   {
   int cartcoord[STDIM];
 
   si_to_cart(cartcoord, r, geo);
   
-  // if site is on the border (we chose time dimension)
+  // if site is on the border of direction dir
   // and link is not orthogonal to the face, return 1 (true)
-  if(cartcoord[0]!=0 || cartcoord[1]!=(geo->d_size[0]-1)) return 0;
-  else if(dir==0) return 0;
+  if(cartcoord[dir]!=0 || cartcoord[dir]!=(geo->d_size[dir]-1)) return 0;
+  else if(dirlink==dir) return 0;
   else return 1;
   }
 
