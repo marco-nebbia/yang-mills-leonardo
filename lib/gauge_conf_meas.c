@@ -723,80 +723,60 @@ void polyakov_for_tracedef(Gauge_Conf const * const GC,
    free(imp);
    }
 
-// product of two Polyakov loops in the x1
-// direction in the bulk of the lattice
-void polyakov_product_in_bulk_dir1(Gauge_Conf const * const GC,
-                              Geometry const * const geo,
-                              int d,
-                              double *re,
-                              double *im)
+// product of two Polyakov loops in spatial direction dir
+// averaged on all spatial sites
+void polyakov_correlator_dir(Gauge_Conf const * const GC,
+                             Geometry const * const geo,
+                             int d,
+                             int dir,
+                             double *re,
+                             double *im)
    {
    double repoly1, repoly2;
    double impoly1, impoly2;
    double reprod, improd;
 
-   int l;
-   
+   int cartcoord[STDIM];
+   long r, rsp;
+
    #ifdef DEBUG
+   if(dir==0)
+      {
+      fprintf(stderr, "Direction of correlator of Polyakov loops is time, should be a spatial dimension! (%s, %d)\n", __FILE__, __LINE__);
+      exit(EXIT_FAILURE);
+      }
+   if(dir>=STDIM)
+      {
+      fprintf(stderr, "Direction of correlator of Polyakov loops is greater than space-time dimensions! %d>=%d (%s, %d)\n", dir, STDIM, __FILE__, __LINE__);
+      exit(EXIT_FAILURE);
+      }
    if(d<=0)
       {
-      fprintf(stderr, "Distance between Polyakov loops <=0\n", __FILE__, __LINE__);
+      fprintf(stderr, "Distance between Polyakov loops <=0! (%s, %d)\n", __FILE__, __LINE__);
+      exit(EXIT_FAILURE);
+      }
+   if(d>geo->d_size[dir])
+      {
+      fprintf(stderr, "Distance between Polyakov loops greater than lattice size! %d>%d (%s, %d)\n", d, geo->d_size[dir], __FILE__, __LINE__);
       exit(EXIT_FAILURE);
       }
    #endif
 
-   // to preserve symmetry, if size and d 
-   // are not both even or both odd -> d++
-   if(((geo->d_size[1]%2)+(d%2))==1) d++;
-
-   l=(geo->d_size[1]-d)/2;
-
-   // be sure to choose a number in the lattice
-   /*int minsize=geo->d_size[2];
-
-   #if (STDIM > 3)
-   for(int i=3; i<STDIM; i++)
-      {
-      if(geo->d_size[i]<minsize) minsize=geo->d_size[i];
-      }
-   #endif*/
-
-   int cartcoord[STDIM];
-   long r;
-
-   cartcoord[0]=0; // bottom of lattice
-   cartcoord[1]=l-1; // x_1=l
-
-   for(int i=2; i<STDIM; i++)
-      {
-      cartcoord[i]=0; // x_i=0
-      }
-   
    reprod=0.;
    improd=0.;
 
-   // start from x_2 because x_0 is direction of Polyakov loop
-   // and x_1 has Dirichlet boundary condition so no translation
-   // invariance
-   #if STDIM == 3
-   for(int x2=0; x2<geo->d_size[2]; x2++)
+   for(rsp=0; rsp<(geo->d_space_vol); rsp++)
       {
-      cartcoord[2]=x2;
-      r=cart_to_si(cartcoord, geo);
+      r=sisp_and_t_to_si(geo, rsp, 0);
 
-      // compute Polyakov loop from site r that has x_1=l
       polyakov_fixed_site(GC, geo, r, &repoly1, &impoly1);
 
-      // moving to x_1=l+d
-      cartcoord[1]+=d;
+      si_to_cart(cartcoord, r, geo);
+      cartcoord[dir]+=d;
       r=cart_to_si(cartcoord, geo);
 
-      // compute Polyakov loop from site r' that has x_1=l+d
       polyakov_fixed_site(GC, geo, r, &repoly2, &impoly2);
 
-      // moving back to x_1=l
-      cartcoord[1]-=d;
-         
       #if NCOLOR == 2
       // if gauge group is SU(2), trace is real
       reprod+=repoly1*repoly2;
@@ -809,72 +789,15 @@ void polyakov_product_in_bulk_dir1(Gauge_Conf const * const GC,
       reprod+=repoly1*repoly2+impoly1*impoly2;
       improd+=-repoly1*impoly2+repoly2*impoly1;
       #endif
-
-      #if GAUGE_DEBUG == 3
-      printf("Repoly1: %f\n", repoly1);
-      printf("Repoly2: %f\n", repoly2);
-      printf("Correlator: %f\n\n", reprod);
-      #endif
       }
-      
-   // average for number of sites
-   reprod/=(double) geo->d_size[2];
-   improd/=(double) geo->d_size[2];  
-   #elif STDIM == 4
-   for(int x2=0; x2<(geo->d_size[2]); x2++)
-      {
-      cartcoord[2]=x2;
-      for(int x3=0; x<geo->d_size[3]; x3++)
-         {
-         cartcoord[3]=x3;
-         r=cart_to_si(cartcoord, geo);
 
-         // compute Polyakov loop from site r that has x_1=l
-         polyakov_fixed_site(GC, geo, r, &repoly1, &impoly1);
-
-         // moving to x_1=l+d
-         cartcoord[1]+=d;
-         r=cart_to_si(cartcoord, geo);
-
-         // compute Polyakov loop from site r' that has x_1=l+d
-         polyakov_fixed_site(GC, geo, r, &repoly2, &impoly2);
-
-         // moving back to x_1=l
-         cartcoord[1]-=d;
-         
-         #if NCOLOR == 2
-         // if gauge group is SU(2), trace is real
-         reprod+=repoly1*repoly2;
-         improd=0.;
-         #elif
-         // if gauge group is SU(N) with N!=2, trace is complex
-         // so conjugate the 2nd loop to take it in downward sense
-         // impoly2->-impoly2
-         // and use complex multiplication rules
-         reprod+=repoly1*repoly2+impoly1*impoly2;
-         improd+=-repoly1*impoly2+repoly2*impoly1;
-         #endif
-
-         #if GAUGE_DEBUG == 3
-         printf("Repoly1: %f\n", repoly1);
-         printf("Repoly2: %f\n", repoly2);
-         printf("Correlator: %f\n\n", reprod);
-         #endif
-         }
-      }
-   
-   // average for number of sites
-   reprod/=((double) geo->d_size[2])*((double) geo->d_size[3]);
-   improd/=((double) geo->d_size[2])*((double) geo->d_size[3]);  
-   #endif
-   
-   *re=reprod;
-   *im=improd;
+   *re=reprod*(geo->d_inv_space_vol);
+   *im=improd*(geo->d_inv_space_vol);
    }
 
 // product of two Polyakov loops parallel to
 // the Dirichlet faces in the bulk of the lattice
-void polyakov_product_in_bulk_dir2(Gauge_Conf const * const GC,
+/*void polyakov_product_in_bulk_dir2(Gauge_Conf const * const GC,
                               Geometry const * const geo,
                               int d,
                               double *re,
@@ -893,14 +816,14 @@ void polyakov_product_in_bulk_dir2(Gauge_Conf const * const GC,
    #endif
 
    // be sure to choose a number in the lattice
-   /*int minsize=geo->d_size[2];
+   int minsize=geo->d_size[2];
 
    #if (STDIM > 3)
    for(int i=3; i<STDIM; i++)
       {
       if(geo->d_size[i]<minsize) minsize=geo->d_size[i];
       }
-   #endif*/
+   #endif
 
    int cartcoord[STDIM];
    long r;
@@ -1009,149 +932,138 @@ void polyakov_product_in_bulk_dir2(Gauge_Conf const * const GC,
    
    *re=reprod;
    *im=improd;
-   }
+   }*/
 
-// product of two horizontal Polyakov loops 
-void polyakov_product_horizontal(Gauge_Conf const * const GC,
-                              Geometry const * const geo,
-                              int d,
-                              double *re,
-                              double *im)
+// correlator with distance d in direction dircorr of two horizontal Polyakov loops
+// in direction dirpoly averaged on all orthogonal directions to dirpoly
+// on a timeslice slice
+void polyakov_horizontal_correlator_timeslice_dir(Gauge_Conf const * const GC,
+                                                  Geometry const * const geo,
+                                                  int d,
+                                                  int dirpoly,
+                                                  int dircorr,
+                                                  int slice,
+                                                  double *re,
+                                                  double *im)
    {
    double repoly1, repoly2;
    double impoly1, impoly2;
    double reprod, improd;
    
+   int cartcoord[STDIM];
+   long r, rsp, rsport, space_vol_ort;
+
    #ifdef DEBUG
+   if(slice>=geo->d_size[0])
+      {
+      fprintf(stderr, "Timeslice to compute spatial Polyakov loops on is greater than time lattice size! %d>=%d (%s, %d)\n", __FILE__, __LINE__);
+      exit(EXIT_FAILURE);
+      }
+   if(dirpoly==0)
+      {
+      fprintf(stderr, "Direction of Polyakov spatial loop is chosen to be actually time dimension! (%s, %d)\n", __FILE__, __LINE__);
+      exit(EXIT_FAILURE);
+      }
+   else if(dirpoly==dircorr)
+      {
+      fprintf(stderr, "Direction of correlator distance is chosen to be the same direction of Polyakov spatial loops! %d=%d (%s, %d)\n", dirpoly, dircorr, __FILE__, __LINE__);
+      exit(EXIT_FAILURE);
+      }
    if(d<=0)
       {
-      fprintf(stderr, "Distance between Polyakov loops <=0!\n", __FILE__, __LINE__);
+      fprintf(stderr, "Distance between spatial Polyakov loops <=0! (%s, %d)\n", __FILE__, __LINE__);
       exit(EXIT_FAILURE);
       }
-   elif(d>geo->d_size[0])
+   else if(d>geo->d_size[dircorr])
       {
-      fprintf(stderr, "Distance between Polyakov loops greater than lattice size!\n", __FILE__, __LINE__);
+      fprintf(stderr, "Distance between spatial Polyakov loops greater than lattice size! %d>%d (%s, %d)\n", d, geo->d_size[dircorr], __FILE__, __LINE__);
       exit(EXIT_FAILURE);
-      }  
+      }
+   if(dircorr==0 && slice+d>geo->d_size[dircorr])
+      {
+      fprintf(stderr, "When computing spatial Polyakov loops correlators in time direction, it crosses the vertical face! %d+%d>%d (%s, %d)\n", d, slice, geo->d_size[dircorr], __FILE__, __LINE__);
+      exit(EXIT_FAILURE);
+      }
    #endif
 
-   int cartcoord[STDIM];
-   long r;
+   space_vol_ort=(long) (geo->d_space_vol)/(geo->d_size[dirpoly]);
 
-   cartcoord[0]=0; // bottom of lattice
-   // in the bulk, halfway between the
-   // two Dirichlet faces
-   cartcoord[1]=((geo->d_size[1])/2)-1;
-   cartcoord[2]=0;
-
-   for(int i=3; i<STDIM && i!=2; i++)
-      {
-      cartcoord[i]=0; // x_i=0
-      }
-   
    reprod=0.;
    improd=0.;
 
-   // x_0 is direction of Polyakov loop
-   // x_1 has Dirichlet boundary condition 
-   // so no translation invariance
-   #if STDIM == 3  
-   for(int x0=0; x0<geo->d_size[0]; x0++)
+   for(rsport=0; rsport<space_vol_ort; rsport++)
       {
-      cartcoord[0]=0;
+      rsp=sisport_and_par_to_sisp(geo, rsport, 0, dirpoly);
+      r=sisp_and_t_to_si(geo, rsp, slice);
 
-      for(int x2=0; x2<geo->d_size[2]; x2++)
-         {
-         cartcoord[2]=x2;
-         r=cart_to_si(cartcoord, geo);
-      
-         // compute Polyakov loop from site r that has x_2
-         polyakov_horizontal_fixed_site(GC, geo, r, 1, &repoly1, &impoly1);
+      polyakov_horizontal_fixed_site(GC, geo, r, dirpoly, &repoly1, &impoly1);
 
-         // moving to x_2+d
-         cartcoord[2]+=d;
-         if(cartcoord[2]>=geo->d_size[2]) cartcoord[2]-=geo->d_size[2];
+      si_to_cart(cartcoord, r, geo);
+      cartcoord[dircorr]+=d;
+      r=cart_to_si(cartcoord, geo);
 
-         r=cart_to_si(cartcoord, geo);
+      polyakov_horizontal_fixed_site(GC, geo, r, dirpoly, &repoly2, &impoly2);
 
-         // compute Polyakov loop from site r' that has x_2=l+d
-         polyakov_horizontal_fixed_site(GC, geo, r, 1, &repoly2, &impoly2);
-      
-         #if NCOLOR == 2
-         // if gauge group is SU(2), trace is real
-         reprod+=repoly1*repoly2;
-         #elif
-         // if gauge group is SU(N) with N!=2, trace is complex
-         // so conjugate the 2nd loop to take it in downward sense
-         // impoly2->-impoly2
-         // and use complex multiplication rules
-         reprod+=repoly1*repoly2+impoly1*impoly2;
-         improd+=-repoly1*impoly2+repoly2*impoly1;
-         #endif
-
-         #if GAUGE_DEBUG == 3
-         printf("Repoly1: %f\n", repoly1);
-         printf("Repoly2: %f\n", repoly2);
-         printf("Correlator: %f\n\n", reprod);
-         #endif
-         }
+      #if NCOLOR == 2
+      // if gauge group is SU(2), trace is real
+      reprod+=repoly1*repoly2;
+      improd=0.;
+      #elif
+      // if gauge group is SU(N) with N!=2, trace is complex
+      // so conjugate the 2nd loop to take it in downward sense
+      // impoly2->-impoly2
+      // and use complex multiplication rules
+      reprod+=repoly1*repoly2+impoly1*impoly2;
+      improd+=-repoly1*impoly2+repoly2*impoly1;
+      #endif
       }
-   
-   reprod/=(((double) geo->d_size[2])*((double) geo->d_size[0]));
 
-   #elif STDIM == 4
-   for(int x0=0; x0<(geo->d_size[0]); x0++)
+   *re=(double) reprod/space_vol_ort;
+   *im=(double) improd/space_vol_ort;
+   }
+
+// correlator with distance d in evey spatial direction of two horizontal Polyakov loops
+// in direction dirpoly averaged on all spatial orthogonal directions to dirpoly
+// on a timeslice slice
+void polyakov_horizontal_correlator_timeslice(Gauge_Conf const * const GC,
+                                              Geometry const * const geo,
+                                              int d,
+                                              int slice,
+                                              double *re,
+                                              double *im)
+   {
+   double repoly, impoly;
+   double repoly_memo, impoly_memo;
+
+   #ifdef DEBUG
+   if(slice>=geo->d_size[0])
       {
-      cartcoord[0]=x0;
-
-      for(int x2=0; x2<(geo->d_size[2]); x2++)
-         {
-         cartcoord[2]=x2;
-
-         for(int x3=0; x3<(geo->d_size[3]); x3++)
-            {
-            cartcoord[3]=x3;
-            r=cart_to_si(cartcoord, geo);
-
-            // compute Polyakov loop from site r that has x_2=l
-            polyakov_horizontal_fixed_site(GC, geo, r, &repoly1, &impoly1);
-
-            // moving to x_2=l+d
-            cartcoord[2]+=d;
-            if(cartcoord[2]>=geo->d_size[2]) cartcoord[2]-=geo->d_size[2];
-
-            r=cart_to_si(cartcoord, geo);
-
-            // compute Polyakov loop from site r' that has x_2=l+d
-            polyakov_horizontal_fixed_site(GC, geo, r, 1, &repoly2, &impoly2);
-         
-            #if NCOLOR == 2
-            // if gauge group is SU(2), trace is real
-            reprod+=repoly1*repoly2;
-            #elif
-            // if gauge group is SU(N) with N!=2, trace is complex
-            // so conjugate the 2nd loop to take it in downward sense
-            // impoly2->-impoly2
-            // and use complex multiplication rules
-            reprod+=repoly1*repoly2+impoly1*impoly2;
-            improd+=-repoly1*impoly2+repoly2*impoly1;
-            #endif
-
-            #if GAUGE_DEBUG == 3
-            printf("Repoly1: %f\n", repoly1);
-            printf("Repoly2: %f\n", repoly2);
-            printf("Correlator: %f\n\n", reprod);
-            #endif
-            }
-         }
+      fprintf(stderr, "Timeslice to compute spatial Polyakov loops on is greater than time lattice size! %d>=%d (%s, %d)\n", __FILE__, __LINE__);
+      exit(EXIT_FAILURE);
       }
-   // average for number of sites
-   reprod/=(((double) geo->d_size[0])*((double) geo->d_size[2])*((double) geo->d_size[3]));
-   improd/=(((double) geo->d_size[0])*((double) geo->d_size[2])*((double) geo->d_size[3]));  
+   if(d<=0)
+      {
+      fprintf(stderr, "Distance between spatial Polyakov loops <=0! (%s, %d)\n", __FILE__, __LINE__);
+      exit(EXIT_FAILURE);
+      }
    #endif
-   
-   *re=reprod;
-   *im=improd;
+
+   repoly_memo=0.;
+   impoly_memo=0.;
+
+   for(int i=1; i<STDIM; i++)
+      {
+      for(int j=i+1; j<STDIM; j++)
+         {
+         polyakov_horizontal_correlator_timeslice_dir(GC, geo, d, i, j, slice, &repoly, &impoly);
+
+         repoly_memo+=repoly;
+         impoly_memo+=impoly;
+         }
+      }
+
+   *re=(double) repoly/((STDIM-1)*(STDIM-2));
+   *im=(double) impoly/((STDIM-1)*(STDIM-2));
    }
 
 // compute the Wilson loop of dimensions d1*d2 on directions (i,j)

@@ -223,21 +223,36 @@ void polyakov_for_tracedef(Gauge_Conf const * const GC,
                            Geometry const * const geo,
                            double *repoly,
                            double *impoly);
-void polyakov_product_in_bulk_dir1(Gauge_Conf const * const GC,
+void polyakov_correlator_dir(Gauge_Conf const * const GC,
+                             Geometry const * const geo,
+                             int d,
+                             int dir,
+                             double *re,
+                             double *im);
+/*void polyakov_product_in_bulk_dir1(Gauge_Conf const * const GC,
                                    Geometry const * const geo,
                                    int dist,
                                    double *re,
-                                   double *im);
-void polyakov_product_in_bulk_dir2(Gauge_Conf const * const GC,
+                                   double *im);*/
+/*void polyakov_product_in_bulk_dir2(Gauge_Conf const * const GC,
                                    Geometry const * const geo,
                                    int dist,
                                    double *re,
-                                   double *im);
-void polyakov_product_horizontal(Gauge_Conf const * const GC,
-                                 Geometry const * const geo,
-                                 int d,
-                                 double *re,
-                                 double *im);
+                                   double *im);*/
+void polyakov_horizontal_correlator_timeslice_dir(Gauge_Conf const * const GC,
+                                                  Geometry const * const geo,
+                                                  int d,
+                                                  int dirpoly,
+                                                  int dircorr,
+                                                  int slice,
+                                                  double *re,
+                                                  double *im);
+void polyakov_horizontal_correlator_timeslice(Gauge_Conf const * const GC,
+                                              Geometry const * const geo,
+                                              int d,
+                                              int slice,
+                                              double *re,
+                                              double *im);
 void wilson_fixed_site(Gauge_Conf const * const GC,
                        Geometry const * const geo,
                        long r,
