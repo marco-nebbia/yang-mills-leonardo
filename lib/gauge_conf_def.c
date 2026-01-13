@@ -59,8 +59,10 @@ void init_gauge_conf(Gauge_Conf *GC, Geometry const * const geo, GParam const * 
        for(j=0; j<STDIM; j++)
           {
           #if DIRICHLET_MODE == 1
+          int i;
+          i=(int) j;
           // apply Dirichlet boundary conditions on time faces
-          check=check_link_on_border(geo, r, 0, j);
+          check=check_link_on_border(geo, r, 0, i);
           
           if(check==1) 
             {
@@ -88,8 +90,11 @@ void init_gauge_conf(Gauge_Conf *GC, Geometry const * const geo, GParam const * 
        for(j=0; j<STDIM; j++)
           {
           #if DIRICHLET_MODE == 1
+          int i;
+          i=(int) j;
+
           // apply Dirichlet boundary conditions on time faces
-          check=check_link_on_border(geo, r, 0, j);
+          check=check_link_on_border(geo, r, 0, i);
 
           if(check==1) 
             {
