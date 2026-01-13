@@ -134,17 +134,17 @@ void print_template_input(void)
     }
   else
     {
-    fprintf(fp, "size 160 9 160\n");
+    fprintf(fp, "size 9 90 90\n");
     fprintf(fp,"\n");
     fprintf(fp, "beta 12.15266\n");
     fprintf(fp, "theta 1.5\n");
     fprintf(fp,"\n");
-    fprintf(fp, "sample    2000\n");
+    fprintf(fp, "sample    3000\n");
     fprintf(fp, "thermal   0\n");
     fprintf(fp, "overrelax 5\n");
     fprintf(fp, "measevery 1\n");
     fprintf(fp, "monomeas  0  # 1=monopoles measures are performed\n");
-    fprintf(fp, "dist_poly 20\n");
+    fprintf(fp, "dist_poly 50\n");
     fprintf(fp,"\n");
     fprintf(fp, "start                   0  # 0=ordered  1=random  2=from saved configuration\n");
     fprintf(fp, "saveconf_back_every     5  # if 0 does not save, else save backup configurations every ... updates\n");

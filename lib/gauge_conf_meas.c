@@ -1018,8 +1018,8 @@ void polyakov_horizontal_correlator_timeslice_dir(Gauge_Conf const * const GC,
       #endif
       }
 
-   *re=(double) reprod/space_vol_ort;
-   *im=(double) improd/space_vol_ort;
+   *re=reprod*(geo->d_size[dirpoly])*(geo->d_inv_space_vol);
+   *im=improd*(geo->d_size[dirpoly])*(geo->d_inv_space_vol);
    }
 
 // correlator with distance d in evey spatial direction of two horizontal Polyakov loops
@@ -1080,7 +1080,6 @@ void wilson_fixed_site(Gauge_Conf const * const GC,
    {
    GAUGE_GROUP matrix;
    int x_i, x_j;
-   double rewilson, imwilson;
 
    #ifdef DEBUG
    if(i>=STDIM)
@@ -1265,8 +1264,8 @@ void wilson_slice_time(Gauge_Conf const * const GC,
       imwil_memo+=imwilson;
       }
    
-   *re=rewil_memo/((int) (STDIM-1));
-   *im=imwil_memo/((int) (STDIM-1));
+   *re=(double) (rewil_memo/(STDIM-1));
+   *im=(double) (imwil_memo/(STDIM-1));
    }
 
 // compute the local topological charge at point r
@@ -1430,26 +1429,43 @@ void perform_measures_localobs(Gauge_Conf const * const GC,
                                FILE *datafilep,
                                FILE *monofilep)
    {
-   double plaqs, plaqt;
-   //double polyre, polyim;
-   double prod_polyre, prod_polyim;
+   //double plaqs, plaqt;
+   double plaqpar, plaqort;
+   double polyre, polyim;
+   double wilre, wilim;
+   //double prod_polyre, prod_polyim;
    int dist_max=param->d_dist_poly;
 
-   plaquette(GC, geo, &plaqs, &plaqt);
+   //plaquette(GC, geo, &plaqs, &plaqt);
    //polyakov(GC, geo, &polyre, &polyim);
 
    fprintf(datafilep, "%ld ", GC->update_index);
-   fprintf(datafilep, "%.12g %.12g ", plaqs, plaqt);
+   //fprintf(datafilep, "%.12g %.12g ", plaqs, plaqt);
 
-   for (int dist=1; dist<=dist_max; dist++)
+   for(int dist=1; dist<=dist_max; dist++)
       {
-      polyakov_product_in_bulk_dir2(GC, geo, dist, &prod_polyre, &prod_polyim);
-      fprintf(datafilep, "%d %.12g %.12g ", dist, prod_polyre, prod_polyim);
-      }
-     
-   //fprintf(datafilep, "%.12g %.12g ", polyre, polyim);
-   
+      wilson_slice_time(GC, geo, dist, 1, 0, &wilre, &wilim);
+      fprintf(datafilep, "%d %.12g %.12g ", dist, wilre, wilim);
 
+      for(int dir=1; dir<STDIM; dir++)
+         {
+         polyakov_correlator_dir(GC, geo, dist, dir, &polyre, &polyim);
+         fprintf(datafilep, "%d %d %.12g %.12g ", dist, dir,  polyre, polyim);
+         }
+
+      for(int slice=1; slice<geo->d_size[0]-1; slice++)
+         {
+         polyakov_horizontal_correlator_timeslice(GC, geo, dist, slice, &polyre, &polyim);
+         fprintf(datafilep, "%d %d %.12g %.12g ", dist, slice,  polyre, polyim);
+         }
+      }
+
+   for(int slice=1; slice<geo->d_size[1]-1; slice++)
+      {
+      plaquette_slice_time(GC, geo, slice, &plaqpar, &plaqort);
+      fprintf(datafilep, "%d %.12g %.12g ", slice,  plaqpar, plaqort);
+      }
+   
    // topological observables
    #if( (STDIM==4 && NCOLOR>1) || (STDIM==2 && NCOLOR==1) )
      int i, err;
