@@ -916,8 +916,6 @@ void update(Gauge_Conf * GC,
       compute_clovers(GC, geo, dir);
       #endif
 
-      
-
       #ifdef OPENMP_MODE
       #pragma omp parallel for num_threads(NTHREADS) private(r)
       #endif 
