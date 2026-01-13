@@ -183,9 +183,9 @@ fi
    #No chosen value for boundary condition: using the default periodic boundary condition
    #***** 
    #])
-  #AC_DEFINE_UNQUOTED(DIRICHLET_MODE, 1, [Periodic boundary condition])
+  #AC_DEFINE_UNQUOTED(DIRICHLET_MODE, 0, [Periodic boundary condition])
 #else
-  #AC_DEFINE_UNQUOTED(DIRICHLET_MODE, 0, [Dirichlet boundary condition])
+  #AC_DEFINE_UNQUOTED(DIRICHLET_MODE, 1, [Dirichlet boundary condition])
 #fi
 
 
