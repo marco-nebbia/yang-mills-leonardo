@@ -4955,7 +4955,11 @@ fi
 
 if test x${use_dirichlet} = xyes; then
 
-printf "%s\n" "#define DIRICHLET_MODE /**/" >>confdefs.h
+printf "%s\n" "#define DIRICHLET_MODE 1" >>confdefs.h
+
+  else
+
+printf "%s\n" "#define DIRICHLET_MODE 0" >>confdefs.h
 
 fi
 
@@ -5068,25 +5072,16 @@ printf "%s\n" "#define NHIGGS ${N_higgs}" >>confdefs.h
 
 fi
 
-if test x${use_dirichlet} = x; then
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING:
-   *****
-   No chosen value for boundary condition: using the default periodic boundary condition
-   *****
-   " >&5
-printf "%s\n" "$as_me: WARNING:
-   *****
-   No chosen value for boundary condition: using the default periodic boundary condition
-   *****
-   " >&2;}
-
-printf "%s\n" "#define DIRICHLET_MODE 0" >>confdefs.h
-
-else
-
-printf "%s\n" "#define DIRICHLET_MODE 1" >>confdefs.h
-
-fi
+#if test x${use_dirichlet} = x; then
+  #AC_MSG_WARN([
+   #*****
+   #No chosen value for boundary condition: using the default periodic boundary condition
+   #*****
+   #])
+  #AC_DEFINE_UNQUOTED(DIRICHLET_MODE, 1, [Periodic boundary condition])
+#else
+  #AC_DEFINE_UNQUOTED(DIRICHLET_MODE, 0, [Dirichlet boundary condition])
+#fi
 
 
 ### CONDITIONALS
