@@ -1053,8 +1053,10 @@ void polyakov_horizontal_correlator_timeslice(Gauge_Conf const * const GC,
 
    for(int i=1; i<STDIM; i++)
       {
-      for(int j=i+1; j<STDIM; j++)
+      for(int j=1; j<STDIM; j++)
          {
+         if(j==i) continue;
+         
          polyakov_horizontal_correlator_timeslice_dir(GC, geo, d, i, j, slice, &repoly, &impoly);
 
          repoly_memo+=repoly;

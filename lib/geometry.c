@@ -108,13 +108,13 @@ void init_geometry(Geometry *geo, int insize[STDIM])
      }
 
      
-  err=posix_memalign((void**)&(geo->d_parslice), (size_t)INT_ALIGN, (size_t) geo->d_space_vol * sizeof(int));
+  err=posix_memalign((void**)&(geo->d_parslice), (size_t)INT_ALIGN, (size_t) geo->d_space_vol * sizeof(int *));
   if(err!=0)
     {
     fprintf(stderr, "Problems in allocating the geometry! (%s, %d)\n", __FILE__, __LINE__);
     exit(EXIT_FAILURE);
     }
-  err=posix_memalign((void**)&(geo->d_ortcomp), (size_t)INT_ALIGN, (size_t) geo->d_space_vol * sizeof(long));
+  err=posix_memalign((void**)&(geo->d_ortcomp), (size_t)INT_ALIGN, (size_t) geo->d_space_vol * sizeof(long *));
   if(err!=0)
     {
     fprintf(stderr, "Problems in allocating the geometry! (%s, %d)\n", __FILE__, __LINE__);
@@ -135,7 +135,7 @@ void init_geometry(Geometry *geo, int insize[STDIM])
        exit(EXIT_FAILURE);
        }
     }
-  err=posix_memalign((void**)&(geo->d_parort), (size_t)INT_ALIGN, (size_t) (STDIM-1) * sizeof(long *));
+  err=posix_memalign((void**)&(geo->d_parort), (size_t)INT_ALIGN, (size_t) (STDIM-1) * sizeof(long **));
   long size_volume_divided_dir;
   for(i=1; i<STDIM; i++)
     {

@@ -134,7 +134,7 @@ void print_template_input(void)
     }
   else
     {
-    fprintf(fp, "size 9 90 90\n");
+    fprintf(fp, "size 9 64 64\n");
     fprintf(fp,"\n");
     fprintf(fp, "beta 12.15266\n");
     fprintf(fp, "theta 1.5\n");
