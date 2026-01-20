@@ -4,8 +4,8 @@
 #include"macro.h"
 
 #include<complex.h>
-//#include<openssl/md5.h>
-#include<../x86_64-w64-mingw32/sys-root/mingw/include/openssl/md5.h>
+#include<openssl/md5.h>
+//#include<../x86_64-w64-mingw32/sys-root/mingw/include/openssl/md5.h>
 #include<stdio.h>
 
 #include"flavour_matrix.h"
