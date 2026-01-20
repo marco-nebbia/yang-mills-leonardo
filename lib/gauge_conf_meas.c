@@ -1459,14 +1459,14 @@ void perform_measures_localobs(Gauge_Conf const * const GC,
          }
       }
 
-   for(int dist=1; dist<=dist_max; dist++)
+   /*for(int dist=1; dist<=dist_max; dist++)
       {
       for(int slice=1; slice<geo->d_size[0]-1; slice++)
          {
          polyakov_horizontal_correlator_timeslice(GC, geo, dist, slice, &polyre, &polyim);
          fprintf(datafilep, "%d %d %.12g %.12g ", dist, slice,  polyre, polyim);
          }
-      }
+      }*/
 
    for(int slice=1; slice<geo->d_size[1]-1; slice++)
       {

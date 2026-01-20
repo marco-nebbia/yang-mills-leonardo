@@ -136,6 +136,11 @@ void init_geometry(Geometry *geo, int insize[STDIM])
        }
     }
   err=posix_memalign((void**)&(geo->d_parort), (size_t)INT_ALIGN, (size_t) (STDIM-1) * sizeof(long **));
+  if(err!=0)
+    {
+    fprintf(stderr, "Problems in allocating the geometry! (%s, %d)\n", __FILE__, __LINE__);
+    exit(EXIT_FAILURE);
+    }
   long size_volume_divided_dir;
   for(i=0; i<STDIM-1; i++)
     {
@@ -199,11 +204,11 @@ void init_geometry(Geometry *geo, int insize[STDIM])
      geo->d_timeslice[r]=value;
      geo->d_tsp[value][rp]=r;
 
-     for(int j=1; j<STDIM; j++)
+     for(int j=0; j<STDIM-1; j++)
       {
       // compute, for every spatial direction, its component
       // and single index merging all spatial orthogonal components
-      sisp_to_sisport_and_par_compute(&rm, &valuem, rp, j, geo);
+      sisp_to_sisport_and_par_compute(&rm, &valuem, rp, j+1, geo);
       geo->d_ortcomp[rp][j]=rm;
       geo->d_parslice[rp][j]=valuem;
       geo->d_parort[j][valuem][rm]=rp;
