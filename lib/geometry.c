@@ -110,7 +110,7 @@ void init_geometry(Geometry *geo, int insize[STDIM])
      }
 
      
-  err=posix_memalign((void**)&(geo->d_parslice), (size_t)INT_ALIGN, (size_t) geo->d_space_vol * sizeof(int *));
+  /*err=posix_memalign((void**)&(geo->d_parslice), (size_t)INT_ALIGN, (size_t) geo->d_space_vol * sizeof(int *));
   if(err!=0)
     {
     fprintf(stderr, "Problems in allocating the geometry! (%s, %d)\n", __FILE__, __LINE__);
@@ -168,7 +168,7 @@ void init_geometry(Geometry *geo, int insize[STDIM])
           }
         }
       }
-    }
+    }*/
   
 
      
@@ -223,7 +223,7 @@ void init_geometry(Geometry *geo, int insize[STDIM])
       }*/
      }
 
-  for(r=0; r<geo->d_space_vol; r++)
+  /*for(r=0; r<geo->d_space_vol; r++)
      {
      for(i=0; i<STDIM-1; i++)
        {
@@ -234,7 +234,7 @@ void init_geometry(Geometry *geo, int insize[STDIM])
        geo->d_parslice[r][i]=value;
        geo->d_parort[i][value][rp]=r;
        }
-     }
+     }*/
 
   #ifdef DEBUG
     test_geometry(geo);
@@ -285,8 +285,8 @@ long nnm(Geometry const * const geo, long r, int i);
 long sisp_and_t_to_si(Geometry const * const geo, long sisp, int t);
 void si_to_sisp_and_t(long *sisp, int *t, Geometry const * const geo, long si);
 
-long sisport_and_par_to_sisp(Geometry const * const geo, long sisport, int par, int dir);
-void sisp_to_sisport_and_par(long *sisport, int *par, int dir, Geometry const * const geo, long sisp);
+/*long sisport_and_par_to_sisp(Geometry const * const geo, long sisport, int par, int dir);
+void sisp_to_sisport_and_par(long *sisport, int *par, int dir, Geometry const * const geo, long sisp);*/
 
 void test_geometry(Geometry const * const geo)
   {
@@ -764,7 +764,7 @@ void lexeo_to_lexeosp_and_t(long *lexeosp, int *t, long lexeo, Geometry const * 
   *lexeosp=cartsp_to_lexeosp(ccsp, geo);
   }
 
-#if STDIM > 2
+/*#if STDIM > 2
 // spatial orthogonal cartesian coordinates -> spatial orthogonal lexicographic index
 long cartsport_to_lexsport(int const * const ccsport, int dir, Geometry const * const geo)
   {
@@ -990,5 +990,5 @@ void lexeosp_to_lexeosport_and_par(long *lexeosport, int *par, long lexeosp, int
 
   *lexeosport=cartsport_to_lexeosport(ccsport, dir, geo);  
   }
-#endif
+#endif*/
 #endif

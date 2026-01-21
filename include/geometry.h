@@ -18,9 +18,9 @@ typedef struct Geometry {
    long *d_spacecomp; // d_spacecomp[r]  = space component of r
    long **d_tsp;      // d_tsp[t][rsp]   = r such that d_timeslice[r]=t and d_spacecomp[r]=rsp
 
-   int **d_parslice;  // d_parslice[rsp][i]       = i-th direction component of rsp (1<=i<=STDIM)
-   long **d_ortcomp;  // d_ortcomp[rsp][i]        = orthogonal component to i-th direction of rsp (1<=i<=STDIM)
-   long ***d_parort;  // d_parort[i][par][rsport] = rsp such that d_parslice[rsp][i]=par and d_ortcomp[rsp][i]=rsport
+   /*int **d_parslice;  // d_parslice[rsp][i]       = i-th direction component of rsp (1<=i<=STDIM)
+   long **d_ortcomp;    // d_ortcomp[rsp][i]        = orthogonal component to i-th direction of rsp (1<=i<=STDIM)
+   long ***d_parort;*/    // d_parort[i][par][rsport] = rsp such that d_parslice[rsp][i]=par and d_ortcomp[rsp][i]=rsport
 } Geometry;
 
 // these are the functions to be used in switching between different indices
@@ -30,10 +30,10 @@ extern long (*lex_to_si)(long lex, Geometry const * const geo);          // lexi
 extern long (*si_to_lex)(long si, Geometry const * const geo);           // lexicographic -> single index
 extern long (*sisp_and_t_to_si_compute)(long sisp, int t, Geometry const * const geo);            // single index spatial and time -> single index tot
 extern void (*si_to_sisp_and_t_compute)(long *sisp, int *t, long si, Geometry const * const geo); // single index tot -> single index spatial and time
-#if STDIM > 2
+/*#if STDIM > 2
 extern long (*sisport_and_par_to_sisp_compute)(long sisport, int par, int dir, Geometry const * const geo);              // single index orthogonal and parallel component -> single index spatial
 extern void (*sisp_to_sisport_and_par_compute)(long *sisport, int *par, long sisp, int dir, Geometry const * const geo); // single index spatial -> single index orthogonal and parallel component
-#endif
+#endif*/
 
 // general functions
 void init_geometry(Geometry *geo, int insize[STDIM]);
@@ -66,7 +66,7 @@ inline void si_to_sisp_and_t(long *sisp, int *t, Geometry const * const geo, lon
   *sisp=geo->d_spacecomp[si];
   *t=geo->d_timeslice[si];
   }
-
+/*
 // single index orthogonal and parallel component -> single index spatial
 inline long sisport_and_par_to_sisp(Geometry const * const geo, long sisport, int par, int dir)
   {
@@ -79,7 +79,7 @@ inline void sisp_to_sisport_and_par(long *sisport, int *par, int dir, Geometry c
   *sisport=geo->d_ortcomp[sisp][dir-1];
   *par=geo->d_parslice[sisp][dir-1];
   }
- 
+*/ 
 // for debug
 void test_geometry(Geometry const * const geo);
 
@@ -106,7 +106,7 @@ long lexeosp_to_lexsp(long lexeosp, Geometry const * const geo);   //  spatial l
 long lexeosp_and_t_to_lexeo(long lexeosp, int t, Geometry const * const geo);               // lexicographic eo spatial and time -> lexicographic eo index
 void lexeo_to_lexeosp_and_t(long *lexeosp, int *t, long lexeo, Geometry const * const geo); // lex. eo index -> lex. eo spatial and t
 
-#if STDIM > 2
+/*#if STDIM > 2
 long cartsport_to_lexsport(int const * const ccsport, int dir, Geometry const * const geo);   // spatial orthogonal cartesian coordinates -> spatial orthogonal lexicographic index
 void lexsport_to_cartsport(int *ccsport, long lexsport, int dir, Geometry const * const geo); // spatial orthogonal lexicographic index -> spatial orthogonal cartesian coordinates
 
@@ -118,6 +118,6 @@ long lexeosport_to_lexsport(long lexeosport, int dir, Geometry const * const geo
 
 long lexeosport_and_par_to_lexeosp(long lexeosport, int par, int dir, Geometry const * const geo);                 // lexicographic eo spatial orthogonal and parallel coordinate -> lexicographic eo spatial index
 void lexeosp_to_lexeosport_and_par(long *lexeosport, int *par, long lexeosp, int dir, Geometry const * const geo); // lexicographic eo spatial index -> lexicographic eo spatial orthogonal and parallel coordinate
-#endif
+#endif*/
 
 #endif
