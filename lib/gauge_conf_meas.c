@@ -960,7 +960,7 @@ void polyakov_horizontal_correlator_timeslice_dir(Gauge_Conf const * const GC,
    #ifdef DEBUG
    if(slice>=geo->d_size[0])
       {
-      fprintf(stderr, "Timeslice to compute spatial Polyakov loops on is greater than time lattice size! %d>=%d (%s, %d)\n", __FILE__, __LINE__);
+      fprintf(stderr, "Timeslice to compute spatial Polyakov loops on is greater than time lattice size! %d>=%d (%s, %d)\n", slice, geo->d_size[0], __FILE__, __LINE__);
       exit(EXIT_FAILURE);
       }
    if(dirpoly==0)
@@ -1042,7 +1042,7 @@ void polyakov_horizontal_correlator_timeslice(Gauge_Conf const * const GC,
    #ifdef DEBUG
    if(slice>=geo->d_size[0])
       {
-      fprintf(stderr, "Timeslice to compute spatial Polyakov loops on is greater than time lattice size! %d>=%d (%s, %d)\n", __FILE__, __LINE__);
+      fprintf(stderr, "Timeslice to compute spatial Polyakov loops on is greater than time lattice size! %d>=%d (%s, %d)\n", slice, geo->d_size[0], __FILE__, __LINE__);
       exit(EXIT_FAILURE);
       }
    if(d<=0)
@@ -1241,7 +1241,7 @@ void wilson_slice_time(Gauge_Conf const * const GC,
       }
    // check if sizes of Wilson loop are smaller
    // of the corresponding lattice sizes
-   for(int dir=1; dir<STDIM; i++)
+   for(int dir=1; dir<STDIM; dir++)
       {
       if(R>(geo->d_size[dir]))
       {
