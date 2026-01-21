@@ -1454,7 +1454,7 @@ void perform_measures_localobs(Gauge_Conf const * const GC,
 
    for(int dist=1; dist<=dist_max; dist++)
       {
-      for(int slice=0; slice<(geo->d_size[0]); slice++)
+      for(int slice=0; slice<(geo->d_size[0]-1); slice++)
          {
          wilson_slice_time(GC, geo, dist, 1, slice, &wilre, &wilim);
          fprintf(datafilep, "%d %.12g %.12g ", dist, wilre, wilim);
@@ -1479,7 +1479,7 @@ void perform_measures_localobs(Gauge_Conf const * const GC,
          }
       }*/
 
-   for(int slice=0; slice<geo->d_size[0]; slice++)
+   for(int slice=0; slice<(geo->d_size[0]-1); slice++)
       {
       plaquette_slice_time(GC, geo, slice, &plaqpar, &plaqort);
       fprintf(datafilep, "%d %.12g %.12g ", slice,  plaqpar, plaqort);
