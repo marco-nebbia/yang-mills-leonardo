@@ -536,7 +536,7 @@ void polyakov_fixed_site(Gauge_Conf const * const GC,
       printf("\n");
       #endif
      
-      r=nnp(geo, r, 0);
+      if(x0 < (geo->d_size[0]-1)) r=nnp(geo, r, 0);
       }
    
    *repoly=retr(&matrix);
