@@ -374,7 +374,7 @@ void test_geometry(Geometry const * const geo)
         }
       }
 
-    #if STDIM > 2
+    /*#if STDIM > 2
     long sisport;
     int par, space_vol_ort;;
     int cartsport[STDIM-2];
@@ -432,7 +432,7 @@ void test_geometry(Geometry const * const geo)
           }
         }
       }
-    #endif
+    #endif*/
   }
 
 
