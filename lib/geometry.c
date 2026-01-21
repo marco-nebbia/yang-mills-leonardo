@@ -865,7 +865,7 @@ long cartsport_to_lexeosport(int const * const ccsport, int dir, Geometry const 
     }
   else
     {
-    return (lexsport + (int) (geo->d_space_vol/geo->d_size[dir]))/2;
+    return (lexsport + (long) (geo->d_space_vol/geo->d_size[dir]))/2;
     }
   }
 
@@ -873,10 +873,10 @@ long cartsport_to_lexeosport(int const * const ccsport, int dir, Geometry const 
 // spatial orthogonal lexicographic eo index -> spatial orthogonal cartesian coordinates
 void lexeosport_to_cartsport(int *ccsport, long lexeosport, int dir, Geometry const * const geo)
   {
-  long lexsport;
-  int i, eo, space_vol_ort;
+  long lexsport, space_vol_ort;
+  int i, eo;
 
-  space_vol_ort=(int) (geo->d_space_vol/geo->d_size[dir]);
+  space_vol_ort=(long) (geo->d_space_vol/geo->d_size[dir]);
 
   if(space_vol_ort % 2 == 0)
     {
