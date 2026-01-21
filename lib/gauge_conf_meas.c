@@ -777,6 +777,8 @@ void polyakov_correlator_dir(Gauge_Conf const * const GC,
 
       si_to_cart(cartcoord, r, geo);
       cartcoord[dir]+=d;
+
+      if(cartcoord[dir]>=(geo->d_size[dir])) cartcoord[dir]-=(geo->d_size[dir]);
       r=cart_to_si(cartcoord, geo);
 
       polyakov_fixed_site(GC, geo, r, &repoly2, &impoly2);
@@ -1004,6 +1006,8 @@ void polyakov_correlator_dir(Gauge_Conf const * const GC,
 
       si_to_cart(cartcoord, r, geo);
       cartcoord[dircorr]+=d;
+      if(cartcoord[dircorr]>=(geo->d_size[dir])) cartcoord[dircorr]-=(geo->d_size[dir]);
+
       r=cart_to_si(cartcoord, geo);
 
       polyakov_horizontal_fixed_site(GC, geo, r, dirpoly, &repoly2, &impoly2);
@@ -1450,8 +1454,11 @@ void perform_measures_localobs(Gauge_Conf const * const GC,
 
    for(int dist=1; dist<=dist_max; dist++)
       {
-      wilson_slice_time(GC, geo, dist, 1, 0, &wilre, &wilim);
-      fprintf(datafilep, "%d %.12g %.12g ", dist, wilre, wilim);
+      for(int slice=0; slice<(geo->d_size[0]); slice++)
+         {
+         wilson_slice_time(GC, geo, dist, 1, 0, &wilre, &wilim);
+         fprintf(datafilep, "%d %.12g %.12g ", dist, wilre, wilim);
+         }
       }
       
    for(int dist=1; dist<=dist_max; dist++)
@@ -1472,7 +1479,7 @@ void perform_measures_localobs(Gauge_Conf const * const GC,
          }
       }*/
 
-   for(int slice=1; slice<geo->d_size[1]-1; slice++)
+   for(int slice=0; slice<geo->d_size[0]; slice++)
       {
       plaquette_slice_time(GC, geo, slice, &plaqpar, &plaqort);
       fprintf(datafilep, "%d %.12g %.12g ", slice,  plaqpar, plaqort);
