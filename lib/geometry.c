@@ -1,6 +1,8 @@
 #ifndef GEOMETRY_C
 #define GEOMETRY_C
 
+#define DEBUG
+
 #include"../include/macro.h"
 
 #include<stdio.h>
@@ -204,7 +206,7 @@ void init_geometry(Geometry *geo, int insize[STDIM])
      geo->d_timeslice[r]=value;
      geo->d_tsp[value][rp]=r;
 
-     for(int j=0; j<STDIM-1; j++)
+     /*for(int j=0; j<STDIM-1; j++)
       {
       // compute, for every spatial direction, its component
       // and single index merging all spatial orthogonal components
@@ -212,7 +214,20 @@ void init_geometry(Geometry *geo, int insize[STDIM])
       geo->d_ortcomp[rp][j]=rm;
       geo->d_parslice[rp][j]=valuem;
       geo->d_parort[j][valuem][rm]=rp;
-      }
+      }*/
+     }
+
+  for(r=0; r<geo->d_space_vol; r++)
+     {
+     for(i=0; i<STDIM-1; i++)
+       {
+       // compute, for every spatial direction, its component
+       // and single index merging all spatial orthogonal components
+       sisp_to_sisport_and_par_compute(&rp, &value, r, i+1, geo);
+       geo->d_ortcomp[r][i]=rp;
+       geo->d_parslice[r][i]=valuem;
+       geo->d_parort[i][value][rp]=r;
+       }
      }
 
   #ifdef DEBUG
