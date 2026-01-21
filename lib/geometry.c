@@ -20,8 +20,8 @@ long (*si_to_lex)(long si, Geometry const * const geo)=&lexeo_to_lex;           
 long (*sisp_and_t_to_si_compute)(long sisp, int t, Geometry const * const geo)=&lexeosp_and_t_to_lexeo;            // single index spatial and time -> single index tot
 void (*si_to_sisp_and_t_compute)(long *sisp, int *t, long si, Geometry const * const geo)=&lexeo_to_lexeosp_and_t; // single index tot -> single index spatial and time
 #if STDIM > 2
-long (*sisport_and_par_to_sisp_compute)(long sisport, int par, int dir, Geometry const * const geo)=&lexeosport_and_par_to_lexeosp;              // single index orthogonal and parallel -> single index spatial
-void (*sisp_to_sisport_and_par_compute)(long *sisport, int *par, long sisp, int dir, Geometry const * const geo)=&lexeosp_to_lexeosport_and_par; // single index spatial -> single index orthogonal and parallel
+long (*sisport_and_par_to_sisp_compute)(long sisport, int par, int dir, Geometry const * const geo)=&lexeosport_and_par_to_lexeosp;              // single index orthogonal and parallel component -> single index spatial
+void (*sisp_to_sisport_and_par_compute)(long *sisport, int *par, long sisp, int dir, Geometry const * const geo)=&lexeosp_to_lexeosport_and_par; // single index spatial -> single index orthogonal and parallel component
 #endif
 
 // initialize geometry
@@ -143,25 +143,31 @@ void init_geometry(Geometry *geo, int insize[STDIM])
     fprintf(stderr, "Problems in allocating the geometry! (%s, %d)\n", __FILE__, __LINE__);
     exit(EXIT_FAILURE);
     }
-  long size_volume_divided_dir;
-  for(i=0; i<STDIM-1; i++)
+  else
     {
-    size_volume_divided_dir=(long) geo->d_space_vol/geo->d_size[i+1];
-    err=posix_memalign((void**)&(geo->d_parort[i]), (size_t)INT_ALIGN, (size_t) geo->d_size[i+1] * sizeof(long *));
-    if(err!=0)
+    long size_volume_divided_dir;
+    for(i=0; i<STDIM-1; i++)
       {
-      fprintf(stderr, "Problems in allocating the geometry! (%s, %d)\n", __FILE__, __LINE__);
-      exit(EXIT_FAILURE);
-      }
-      for(int x_dir=0; x_dir<geo->d_size[i+1]; x_dir++)
+      size_volume_divided_dir=(long) geo->d_space_vol/geo->d_size[i+1];
+      err=posix_memalign((void**)&(geo->d_parort[i]), (size_t)INT_ALIGN, (size_t) geo->d_size[i+1] * sizeof(long *));
+      if(err!=0)
         {
-        err=posix_memalign((void**)&(geo->d_parort[i][x_dir]), (size_t)INT_ALIGN, (size_t) size_volume_divided_dir * sizeof(long));
-        if(err!=0)
+        fprintf(stderr, "Problems in allocating the geometry! (%s, %d)\n", __FILE__, __LINE__);
+        exit(EXIT_FAILURE);
+        }
+      else
+        {
+        for(int x_dir=0; x_dir<geo->d_size[i+1]; x_dir++)
           {
-          fprintf(stderr, "Problems in allocating the geometry! (%s, %d)\n", __FILE__, __LINE__);
-          exit(EXIT_FAILURE);
+          err=posix_memalign((void**)&(geo->d_parort[i][x_dir]), (size_t)INT_ALIGN, (size_t) size_volume_divided_dir * sizeof(long));
+          if(err!=0)
+            {
+            fprintf(stderr, "Problems in allocating the geometry! (%s, %d)\n", __FILE__, __LINE__);
+            exit(EXIT_FAILURE);
+            }
           }
         }
+      }
     }
   
 
@@ -234,7 +240,9 @@ void init_geometry(Geometry *geo, int insize[STDIM])
     test_geometry(geo);
   #endif
   }  
-  
+
+// if site is on the border of direction dir
+// and link is not orthogonal to the face, return 1 (true)
 int check_link_on_border(Geometry const * const geo, long r, int dir, int dirlink)
   {
   int cartcoord[STDIM];

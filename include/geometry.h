@@ -31,16 +31,16 @@ extern long (*si_to_lex)(long si, Geometry const * const geo);           // lexi
 extern long (*sisp_and_t_to_si_compute)(long sisp, int t, Geometry const * const geo);            // single index spatial and time -> single index tot
 extern void (*si_to_sisp_and_t_compute)(long *sisp, int *t, long si, Geometry const * const geo); // single index tot -> single index spatial and time
 #if STDIM > 2
-extern long (*sisport_and_par_to_sisp_compute)(long sisport, int par, int dir, Geometry const * const geo);              // single index orthogonal and parallel -> single index spatial
-extern void (*sisp_to_sisport_and_par_compute)(long *sisport, int *par, long sisp, int dir, Geometry const * const geo); // single index spatial -> single index orthogonal and parallel
+extern long (*sisport_and_par_to_sisp_compute)(long sisport, int par, int dir, Geometry const * const geo);              // single index orthogonal and parallel component -> single index spatial
+extern void (*sisp_to_sisport_and_par_compute)(long *sisport, int *par, long sisp, int dir, Geometry const * const geo); // single index spatial -> single index orthogonal and parallel component
 #endif
 
 // general functions
 void init_geometry(Geometry *geo, int insize[STDIM]);
 void free_geometry(Geometry *geo);
 
-// check if link is on border face of 0-th dimension
-int check_link_on_border(Geometry const * const geo, long lexeo, int j, int link); 
+// if site is on the border of direction dir and link is not orthogonal to the face, return 1 (true)
+int check_link_on_border(Geometry const * const geo, long r, int dir, int dirlink); 
 
 // next neighbour in + direction
 inline long nnp(Geometry const * const geo, long r, int i)
@@ -67,11 +67,13 @@ inline void si_to_sisp_and_t(long *sisp, int *t, Geometry const * const geo, lon
   *t=geo->d_timeslice[si];
   }
 
+// single index orthogonal and parallel component -> single index spatial
 inline long sisport_and_par_to_sisp(Geometry const * const geo, long sisport, int par, int dir)
   {
   return geo->d_parort[dir-1][par][sisport];
   }
 
+  // single index spatial -> single index orthogonal and parallel component
 inline void sisp_to_sisport_and_par(long *sisport, int *par, int dir, Geometry const * const geo, long sisp)
   {
   *sisport=geo->d_ortcomp[sisp][dir-1];
