@@ -1456,7 +1456,7 @@ void perform_measures_localobs(Gauge_Conf const * const GC,
       {
       for(int slice=0; slice<(geo->d_size[0]); slice++)
          {
-         wilson_slice_time(GC, geo, dist, 1, 0, &wilre, &wilim);
+         wilson_slice_time(GC, geo, dist, 1, slice, &wilre, &wilim);
          fprintf(datafilep, "%d %.12g %.12g ", dist, wilre, wilim);
          }
       }
