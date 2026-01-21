@@ -225,7 +225,7 @@ void init_geometry(Geometry *geo, int insize[STDIM])
        // and single index merging all spatial orthogonal components
        sisp_to_sisport_and_par_compute(&rp, &value, r, i+1, geo);
        geo->d_ortcomp[r][i]=rp;
-       geo->d_parslice[r][i]=valuem;
+       geo->d_parslice[r][i]=value;
        geo->d_parort[i][value][rp]=r;
        }
      }
