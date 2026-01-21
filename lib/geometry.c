@@ -759,23 +759,21 @@ long cartsport_to_lexsport(int const * const ccsport, int dir, Geometry const * 
   
   // dir ranges from 1 to STDIM-1, so i from 0 to STDIM-2
   // but last element of ccsport is ccsport[STDIM-3], needs a further check
-  while(i<dir && i<STDIM-2)
+  while(i<dir-1 && i<STDIM-2)
      {
      ris+=ccsport[i]*aux;
      aux*=geo->d_size[i+1];
      i++;
      }
-
-  aux/=geo->d_size[dir];
 
   while(i<STDIM-2)
      {
-     aux*=geo->d_size[i+1];
      ris+=ccsport[i]*aux;
+     aux*=geo->d_size[i+2];
      i++;
      }
-  // ris = ccsport[0]
-  //      +ccsport[1]*size[1] (if dir>1)
+  // ris = ccsport[0]   
+  //      +ccsport[1]*size[1] 
   //      +ccsport[2]*size[1]*size[2] (if dir>2)
   //      +...
   //      +ccsport[STDIM-3]*size[1]*size[2]*...*size[STDIM-3] (without size[dir])
