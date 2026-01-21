@@ -69,13 +69,13 @@ inline void si_to_sisp_and_t(long *sisp, int *t, Geometry const * const geo, lon
 
 inline long sisport_and_par_to_sisp(Geometry const * const geo, long sisport, int par, int dir)
   {
-  return geo->d_parort[dir][par][sisport];
+  return geo->d_parort[dir-1][par][sisport];
   }
 
 inline void sisp_to_sisport_and_par(long *sisport, int *par, int dir, Geometry const * const geo, long sisp)
   {
-  *sisport=geo->d_ortcomp[sisp][dir];
-  *par=geo->d_parslice[sisp][dir];
+  *sisport=geo->d_ortcomp[sisp][dir-1];
+  *par=geo->d_parslice[sisp][dir-1];
   }
  
 // for debug
