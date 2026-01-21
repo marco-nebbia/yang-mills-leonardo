@@ -5,6 +5,10 @@
 #define GAUGE_DEBUG 0
 #endif
 
+#ifndef DEBUG
+#define DEBUG
+#endif
+
 #include"../include/macro.h"
 
 #include<complex.h>
