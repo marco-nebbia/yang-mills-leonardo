@@ -941,7 +941,7 @@ void polyakov_correlator_dir(Gauge_Conf const * const GC,
 // correlator with distance d in direction dircorr of two horizontal Polyakov loops
 // in direction dirpoly averaged on all orthogonal directions to dirpoly
 // on a timeslice slice
-void polyakov_horizontal_correlator_timeslice_dir(Gauge_Conf const * const GC,
+/*void polyakov_horizontal_correlator_timeslice_dir(Gauge_Conf const * const GC,
                                                   Geometry const * const geo,
                                                   int d,
                                                   int dirpoly,
@@ -1070,7 +1070,7 @@ void polyakov_horizontal_correlator_timeslice(Gauge_Conf const * const GC,
 
    *re=(double) repoly/((STDIM-1)*(STDIM-2));
    *im=(double) impoly/((STDIM-1)*(STDIM-2));
-   }
+   }*/
 
 // compute the Wilson loop of dimensions d1*d2 on directions (i,j)
 // starting from lattice site r
