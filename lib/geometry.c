@@ -19,10 +19,10 @@ long (*lex_to_si)(long lex, Geometry const * const geo)=&lex_to_lexeo;          
 long (*si_to_lex)(long si, Geometry const * const geo)=&lexeo_to_lex;           // lexicographic -> single index
 long (*sisp_and_t_to_si_compute)(long sisp, int t, Geometry const * const geo)=&lexeosp_and_t_to_lexeo;            // single index spatial and time -> single index tot
 void (*si_to_sisp_and_t_compute)(long *sisp, int *t, long si, Geometry const * const geo)=&lexeo_to_lexeosp_and_t; // single index tot -> single index spatial and time
-#if STDIM > 2
+/*#if STDIM > 2
 long (*sisport_and_par_to_sisp_compute)(long sisport, int par, int dir, Geometry const * const geo)=&lexeosport_and_par_to_lexeosp;              // single index orthogonal and parallel component -> single index spatial
 void (*sisp_to_sisport_and_par_compute)(long *sisport, int *par, long sisp, int dir, Geometry const * const geo)=&lexeosp_to_lexeosport_and_par; // single index spatial -> single index orthogonal and parallel component
-#endif
+#endif*/
 
 // initialize geometry
 void init_geometry(Geometry *geo, int insize[STDIM])
