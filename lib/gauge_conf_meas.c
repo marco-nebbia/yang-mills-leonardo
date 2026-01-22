@@ -1076,6 +1076,75 @@ void polyakov_horizontal_correlator_timeslice(Gauge_Conf const * const GC,
    *im=(double) impoly/((STDIM-1)*(STDIM-2));
    }*/
 
+
+void polyakov_horizontal_corr_bulk_dir1(Gauge_Conf const * const GC,
+                                        Geometry const * const geo,
+                                        int d,
+                                        double *re,
+                                        double *im)
+   {
+   int cartcoord[STDIM], l;
+   long r;
+   double repoly1, impoly1;
+   double repoly2, impoly2;
+   double reprod, improd;
+
+   #ifdef DEBUG
+   if(d<=0)
+      {
+      fprintf(stderr, "Distance between spatial Polyakov loops <=0! (%s, %d)\n", __FILE__, __LINE__);
+      exit(EXIT_FAILURE);
+      }
+   else if(d>=(geo->d_size[0]))
+      {
+      fprintf(stderr, "Distance between spatial Polyakov loops greater than lattice time size! (%s, %d)\n", __FILE__, __LINE__);
+      exit(EXIT_FAILURE); 
+      }
+   #endif
+
+   l=(int) (geo->d_size[0]-d)/2;
+
+   cartcoord[0]=l-1;
+   cartcoord[1]=0;
+   cartcoord[2]=0;
+
+   reprod=0.;
+   improd=0.;
+
+   for(int x2=0; x2<(geo->d_size[2]); x2++)
+      {
+      cartcoord[2]=x2;
+
+      r=cart_to_si(cartcoord, geo);
+
+      polyakov_horizontal_fixed_site(GC, geo, r, 1, &repoly1, &impoly1);
+
+      cartcoord[2]+=d;
+      if(cartcoord[2]>=(geo->d_size[2])) cartcoord[2]-=(geo->d_size[2]);
+
+      r=cart_to_si(cartcoord, geo);
+
+      polyakov_horizontal_fixed_site(GC, geo, r, 1, &repoly2, &impoly2);
+
+      #if NCOLOR == 2
+      // if gauge group is SU(2), trace is real
+      reprod+=repoly1*repoly2;
+      improd=0.;
+      #elif
+      // if gauge group is SU(N) with N!=2, trace is complex
+      // so conjugate the 2nd loop to take it in downward sense
+      // impoly2->-impoly2
+      // and use complex multiplication rules
+      reprod+=repoly1*repoly2+impoly1*impoly2;
+      improd+=-repoly1*impoly2+repoly2*impoly1;
+      #endif
+      }
+
+   *re=(double) reprod/(geo->d_size[2]);
+   *im=(double) improd/(geo->d_size[2]);
+   }
+
+
 // compute the Wilson loop of dimensions d1*d2 on directions (i,j)
 // starting from lattice site r
 void wilson_fixed_site(Gauge_Conf const * const GC,
@@ -1440,9 +1509,9 @@ void perform_measures_localobs(Gauge_Conf const * const GC,
                                FILE *monofilep)
    {
    //double plaqs, plaqt;
-   double plaqpar, plaqort;
+   //double plaqpar, plaqort;
    double polyre, polyim;
-   double wilre, wilim;
+   //double wilre, wilim;
    //double prod_polyre, prod_polyim;
    int dist_max=param->d_dist_poly;
 
@@ -1452,7 +1521,14 @@ void perform_measures_localobs(Gauge_Conf const * const GC,
    fprintf(datafilep, "%ld ", GC->update_index);
    //fprintf(datafilep, "%.12g %.12g ", plaqs, plaqt);
 
+   // quality check
    for(int dist=1; dist<=dist_max; dist++)
+      {
+      polyakov_horizontal_corr_bulk_dir1(GC, geo, dist, &polyre, &polyim);
+      fprintf(datafilep, "%d  %.12g %.12g ", dist,  polyre, polyim);
+      }
+
+   /*for(int dist=1; dist<=dist_max; dist++)
       {
       wilson_slice_time(GC, geo, dist, 1, 0, &wilre, &wilim);
       fprintf(datafilep, "%d %.12g %.12g ", dist, wilre, wilim);
@@ -1465,7 +1541,7 @@ void perform_measures_localobs(Gauge_Conf const * const GC,
          polyakov_correlator_dir(GC, geo, dist, dir, &polyre, &polyim);
          fprintf(datafilep, "%d %d %.12g %.12g ", dist, dir,  polyre, polyim);
          }
-      }
+      }*/
 
    /*for(int dist=1; dist<=dist_max; dist++)
       {
@@ -1476,11 +1552,11 @@ void perform_measures_localobs(Gauge_Conf const * const GC,
          }
       }*/
 
-   for(int slice=0; slice<(geo->d_size[0]-1); slice++)
+   /*for(int slice=0; slice<(geo->d_size[0]-1); slice++)
       {
       plaquette_slice_time(GC, geo, slice, &plaqpar, &plaqort);
       fprintf(datafilep, "%d %.12g %.12g ", slice,  plaqpar, plaqort);
-      }
+      }*/
    
    // topological observables
    #if( (STDIM==4 && NCOLOR>1) || (STDIM==2 && NCOLOR==1) )

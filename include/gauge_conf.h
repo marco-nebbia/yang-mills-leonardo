@@ -239,6 +239,11 @@ void polyakov_correlator_dir(Gauge_Conf const * const GC,
                                    int dist,
                                    double *re,
                                    double *im);*/
+void polyakov_horizontal_corr_bulk_dir1(Gauge_Conf const * const GC,
+                                        Geometry const * const geo,
+                                        int d,
+                                        double *re,
+                                        double *im);
 void polyakov_horizontal_correlator_timeslice_dir(Gauge_Conf const * const GC,
                                                   Geometry const * const geo,
                                                   int d,
