@@ -285,20 +285,25 @@ void plaquette(Gauge_Conf const * const GC,
 void plaquette_slice_time(Gauge_Conf const * const GC,
                           Geometry const * const geo,
                           int slice,
-                          double *plaqpar,
-                          double *plaqort)
+                          double *plaqs,
+                          double *plaqt)
    {
    long r, rsp;
-   double ppar, port;
+   double ps, pt;
 
-   ppar=0.;
-   port=0.;
+   ps=0.;
+   pt=0.;
    
    #ifdef DEBUG
    // check if site is inside the lattice
    if(slice>=(geo->d_size[0]))
       {
       fprintf(stderr, "Slice outside lattice: %d >= %d (%s, %d)\n", slice, geo->d_size[0], __FILE__, __LINE__);
+      exit(EXIT_FAILURE);
+      }
+   else if(slice<0)
+      {
+      fprintf(stderr, "Slice outside lattice: %d < 0 (%s, %d)\n", slice, __FILE__, __LINE__);
       exit(EXIT_FAILURE);
       }
    #endif
@@ -312,33 +317,36 @@ void plaquette_slice_time(Gauge_Conf const * const GC,
       i=0;
       for(j=1; j<STDIM; j++)
          {
-         ppar+=plaquettep(GC, geo, r, i, j);
+         pt+=plaquettep(GC, geo, r, i, j);
          }
      
       for(i=1; i<STDIM; i++)
          {
-         for(j=i+1; j<STDIM; j++)
+         j=i+1;
+
+         while(j<STDIM)
             {
-            port+=plaquettep(GC, geo, r, i, j);
+            ps+=plaquettep(GC, geo, r, i, j);
+            j++;
             }
          }
       }
    
    if(STDIM>2)
      {
-     port*=geo->d_inv_space_vol;
-     port/=((double) (STDIM-1)*(STDIM-2)/2);
+     ps*=geo->d_inv_space_vol;
+     ps/=((double) (STDIM-1)*(STDIM-2)/2);
      }
    else
      {
-     port=0.0;
+     ps=0.0;
      }
 
-   ppar*=geo->d_inv_space_vol;
-   ppar/=((double) STDIM-1);
+   pt*=geo->d_inv_space_vol;
+   pt/=((double) STDIM-1);
 
-   *plaqpar=ppar;
-   *plaqort=port;
+   *plaqs=ps;
+   *plaqt=pt;
    }
 
 // compute the clover discretization of
@@ -1508,10 +1516,10 @@ void perform_measures_localobs(Gauge_Conf const * const GC,
                                FILE *datafilep,
                                FILE *monofilep)
    {
-   //double plaqs, plaqt;
+   double plaqs, plaqt;
    //double plaqpar, plaqort;
    double polyre, polyim;
-   //double wilre, wilim;
+   double wilre, wilim;
    //double prod_polyre, prod_polyim;
    int dist_max=param->d_dist_poly;
 
@@ -1522,13 +1530,13 @@ void perform_measures_localobs(Gauge_Conf const * const GC,
    //fprintf(datafilep, "%.12g %.12g ", plaqs, plaqt);
 
    // quality check
-   for(int dist=1; dist<=dist_max; dist++)
+   /*for(int dist=1; dist<=dist_max; dist++)
       {
       polyakov_horizontal_corr_bulk_dir1(GC, geo, dist, &polyre, &polyim);
       fprintf(datafilep, "%d  %.12g %.12g ", dist,  polyre, polyim);
-      }
+      }*/
 
-   /*for(int dist=1; dist<=dist_max; dist++)
+   for(int dist=1; dist<=dist_max; dist++)
       {
       wilson_slice_time(GC, geo, dist, 1, 0, &wilre, &wilim);
       fprintf(datafilep, "%d %.12g %.12g ", dist, wilre, wilim);
@@ -1541,7 +1549,7 @@ void perform_measures_localobs(Gauge_Conf const * const GC,
          polyakov_correlator_dir(GC, geo, dist, dir, &polyre, &polyim);
          fprintf(datafilep, "%d %d %.12g %.12g ", dist, dir,  polyre, polyim);
          }
-      }*/
+      }
 
    /*for(int dist=1; dist<=dist_max; dist++)
       {
@@ -1552,11 +1560,11 @@ void perform_measures_localobs(Gauge_Conf const * const GC,
          }
       }*/
 
-   /*for(int slice=0; slice<(geo->d_size[0]-1); slice++)
+   for(int slice=0; slice<(geo->d_size[0]); slice++)
       {
-      plaquette_slice_time(GC, geo, slice, &plaqpar, &plaqort);
-      fprintf(datafilep, "%d %.12g %.12g ", slice,  plaqpar, plaqort);
-      }*/
+      plaquette_slice_time(GC, geo, slice, &plaqs, &plaqt);
+      fprintf(datafilep, "%d %.12g %.12g ", slice,  plaqs, plaqt);
+      }
    
    // topological observables
    #if( (STDIM==4 && NCOLOR>1) || (STDIM==2 && NCOLOR==1) )
