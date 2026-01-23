@@ -159,7 +159,7 @@ void print_template_input(void)
     fprintf(fp, "mon_file   mon.dat\n");
     fprintf(fp, "log_file   log.dat\n");
     fprintf(fp, "\n");
-    fprintf(fp, "randseed 0    #(0=time)\n");
+    fprintf(fp, "randseed 0    #(0=time, RANDSEED=takes random seed from SLURM)\n");
     fclose(fp);
     }
   }
