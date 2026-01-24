@@ -1520,7 +1520,7 @@ void perform_measures_localobs(Gauge_Conf const * const GC,
    //double plaqpar, plaqort;
    double polyre, polyim;
    double wilre, wilim;
-   double prod_polyre, prod_polyim;
+   //double prod_polyre, prod_polyim;
    int dist_max=param->d_dist_poly;
 
    //plaquette(GC, geo, &plaqs, &plaqt);
