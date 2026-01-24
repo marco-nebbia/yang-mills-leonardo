@@ -1213,7 +1213,7 @@ void wilson_fixed_site(Gauge_Conf const * const GC,
             // we move first this time because the SU(2) gauge variable
             // U[r][-i] corresponds to the adjoint of the previous U^{dag}[r-1][i]
             r=nnm(geo, r, i);
-            times_equal(&matrix, &(GC->lattice[r][i]));            
+            times_equal_dag(&matrix, &(GC->lattice[r][i]));            
             }
         
    // second vertical product, reverse order so multiply for the adjoint
@@ -1516,11 +1516,11 @@ void perform_measures_localobs(Gauge_Conf const * const GC,
                                FILE *datafilep,
                                FILE *monofilep)
    {
-   //double plaqs, plaqt;
+   double plaqs, plaqt;
    //double plaqpar, plaqort;
    double polyre, polyim;
-   //double wilre, wilim;
-   //double prod_polyre, prod_polyim;
+   double wilre, wilim;
+   double prod_polyre, prod_polyim;
    int dist_max=param->d_dist_poly;
 
    //plaquette(GC, geo, &plaqs, &plaqt);
@@ -1530,13 +1530,13 @@ void perform_measures_localobs(Gauge_Conf const * const GC,
    //fprintf(datafilep, "%.12g %.12g ", plaqs, plaqt);
 
    // quality check
-   for(int dist=1; dist<=dist_max; dist++)
+   /*for(int dist=1; dist<=dist_max; dist++)
       {
       polyakov_horizontal_corr_bulk_dir1(GC, geo, dist, &polyre, &polyim);
       fprintf(datafilep, "%d  %.12g %.12g ", dist,  polyre, polyim);
-      }
+      }*/
 
-   /*for(int dist=1; dist<=dist_max; dist++)
+   for(int dist=1; dist<=dist_max; dist++)
       {
       wilson_slice_time(GC, geo, dist, 1, 0, &wilre, &wilim);
       fprintf(datafilep, "%d %.12g %.12g ", dist, wilre, wilim);
@@ -1549,7 +1549,7 @@ void perform_measures_localobs(Gauge_Conf const * const GC,
          polyakov_correlator_dir(GC, geo, dist, dir, &polyre, &polyim);
          fprintf(datafilep, "%d %d %.12g %.12g ", dist, dir,  polyre, polyim);
          }
-      }*/
+      }
 
    /*for(int dist=1; dist<=dist_max; dist++)
       {
@@ -1560,11 +1560,11 @@ void perform_measures_localobs(Gauge_Conf const * const GC,
          }
       }*/
 
-   /*for(int slice=0; slice<(geo->d_size[0]); slice++)
+   for(int slice=0; slice<(geo->d_size[0]); slice++)
       {
       plaquette_slice_time(GC, geo, slice, &plaqs, &plaqt);
       fprintf(datafilep, "%d %.12g %.12g ", slice,  plaqs, plaqt);
-      }*/
+      }
    
    // topological observables
    #if( (STDIM==4 && NCOLOR>1) || (STDIM==2 && NCOLOR==1) )
