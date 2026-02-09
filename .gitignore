@@ -3,3 +3,11 @@
 *.exe
 
 script_YM_Cygwin.sh
+
+Makefile
+Makefile.*
+
+config.*
+
+yang_mills.*
+yang_mills_local.exe
