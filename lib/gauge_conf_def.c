@@ -3,7 +3,7 @@
 
 #include"../include/macro.h"
 
-#include<openssl/md5.h>
+//#include<openssl/md5.h>
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
@@ -61,12 +61,19 @@ void init_gauge_conf(Gauge_Conf *GC, Geometry const * const geo, GParam const * 
           #if DIRICHLET_MODE == 1
           int i;
           i=(int) j;
+
+          if(i!=j)
+            {
+            fprintf(stderr, "Problems in converting long in int! (%s, %d)\n", __FILE__, __LINE__);
+            exit(EXIT_FAILURE);
+            }
           // apply Dirichlet boundary conditions on time faces
           check=check_link_on_border(geo, r, 0, i);
           
           if(check==1) 
             {
-              one(&(GC->lattice[r][j])); // gauge variable is 1 on border
+              one(&aux1); 
+              equal(&(GC->lattice[r][j]), &aux1);  // gauge variable is 1 on border
               continue;  // next loop iteration
             }
           #endif
@@ -98,7 +105,8 @@ void init_gauge_conf(Gauge_Conf *GC, Geometry const * const geo, GParam const * 
 
           if(check==1) 
             {
-              one(&(GC->lattice[r][j])); // gauge variable is 1 on border
+              one(&aux1); 
+              equal(&(GC->lattice[r][j]), &aux1);  // gauge variable is 1 on border
               continue;  // next loop iteration
             }
           #endif

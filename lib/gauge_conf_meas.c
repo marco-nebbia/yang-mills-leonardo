@@ -524,6 +524,13 @@ void polyakov_fixed_site(Gauge_Conf const * const GC,
 
    for(int x0=0; x0<geo->d_size[0]; x0++)
       {
+      #if DIRICHLET_MODE == 1
+      // last link is outside lattice if Dirichlet BC are imposed
+      // on both bottom and top faces, so it doesn't take part in
+      // Polyakov loop
+      if(x0==(geo->d_size[0]-1)) break;
+      #endif
+
       times_equal(&matrix, &(GC->lattice[r][0]));
       
       #if GAUGE_DEBUG == 2
@@ -544,7 +551,7 @@ void polyakov_fixed_site(Gauge_Conf const * const GC,
       printf("\n");
       #endif
      
-      if(x0 < (geo->d_size[0]-1)) r=nnp(geo, r, 0);
+      r=nnp(geo, r, 0);
       }
    
    *repoly=retr(&matrix);
@@ -1536,9 +1543,23 @@ void perform_measures_localobs(Gauge_Conf const * const GC,
       fprintf(datafilep, "%d  %.12g %.12g ", dist,  polyre, polyim);
       }*/
 
+   wilre=0.;
+   wilim=0.;
+
+   // to measure correlators between spins on bottom face
    for(int dist=1; dist<=dist_max; dist++)
       {
       wilson_slice_time(GC, geo, dist, 1, 0, &wilre, &wilim);
+      fprintf(datafilep, "%d %.12g %.12g ", dist, wilre, wilim);
+      }
+
+   wilre=0.;
+   wilim=0.;
+
+   // to measure correlators between spins of PCM
+   for(int dist=1; dist<=dist_max; dist++)
+      {
+      wilson_slice_time(GC, geo, dist, 1, (geo->d_size[0])-1, &wilre, &wilim);
       fprintf(datafilep, "%d %.12g %.12g ", dist, wilre, wilim);
       }
       
