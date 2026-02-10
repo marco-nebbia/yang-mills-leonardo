@@ -802,7 +802,7 @@ void polyakov_correlator_dir(Gauge_Conf const * const GC,
       // if gauge group is SU(2), trace is real
       reprod+=repoly1*repoly2;
       improd=0.;
-      #elif
+      #elif NCOLOR > 2
       // if gauge group is SU(N) with N!=2, trace is complex
       // so conjugate the 2nd loop to take it in downward sense
       // impoly2->-impoly2
@@ -1543,22 +1543,22 @@ void perform_measures_localobs(Gauge_Conf const * const GC,
       fprintf(datafilep, "%d  %.12g %.12g ", dist,  polyre, polyim);
       }*/
 
-   wilre=0.;
-   wilim=0.;
-
    // to measure correlators between spins on bottom face
    for(int dist=1; dist<=dist_max; dist++)
       {
+      wilre=0.;
+      wilim=0.;
+      
       wilson_slice_time(GC, geo, dist, 1, 0, &wilre, &wilim);
       fprintf(datafilep, "%d %.12g %.12g ", dist, wilre, wilim);
       }
 
-   wilre=0.;
-   wilim=0.;
-
    // to measure correlators between spins of PCM
    for(int dist=1; dist<=dist_max; dist++)
       {
+      wilre=0.;
+      wilim=0.;
+      
       wilson_slice_time(GC, geo, dist, 1, (geo->d_size[0])-1, &wilre, &wilim);
       fprintf(datafilep, "%d %.12g %.12g ", dist, wilre, wilim);
       }
@@ -1567,6 +1567,9 @@ void perform_measures_localobs(Gauge_Conf const * const GC,
       {   
       for(int dir=1; dir<STDIM; dir++)
          {
+         polyre=0.;
+         polyim=0.;
+
          polyakov_correlator_dir(GC, geo, dist, dir, &polyre, &polyim);
          fprintf(datafilep, "%d %d %.12g %.12g ", dist, dir,  polyre, polyim);
          }
@@ -1576,6 +1579,9 @@ void perform_measures_localobs(Gauge_Conf const * const GC,
       {
       for(int slice=1; slice<geo->d_size[0]-1; slice++)
          {
+         polyre=0.;
+         polyim=0.;
+         
          polyakov_horizontal_correlator_timeslice(GC, geo, dist, slice, &polyre, &polyim);
          fprintf(datafilep, "%d %d %.12g %.12g ", dist, slice,  polyre, polyim);
          }
@@ -1583,6 +1589,9 @@ void perform_measures_localobs(Gauge_Conf const * const GC,
 
    for(int slice=0; slice<(geo->d_size[0]); slice++)
       {
+      plaqs=0.;
+      plaqt=0.;
+
       plaquette_slice_time(GC, geo, slice, &plaqs, &plaqt);
       fprintf(datafilep, "%d %.12g %.12g ", slice,  plaqs, plaqt);
       }
