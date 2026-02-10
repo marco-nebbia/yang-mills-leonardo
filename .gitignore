@@ -5,8 +5,6 @@
 script_YM_Cygwin.sh
 script_YM_compilation.sh
 
-Makefile
-
 config.h
 config.log
 config.status
