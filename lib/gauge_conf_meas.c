@@ -521,16 +521,13 @@ void polyakov_fixed_site(Gauge_Conf const * const GC,
       printf("Cartesian coordinate %d: %d\n", i, cartcoord[i]);
       }
    #endif
-
-   for(int x0=0; x0<geo->d_size[0]; x0++)
+   
+   // last link is outside lattice if Dirichlet BC are imposed
+   // on both bottom and top faces, so it doesn't take part in
+   // Polyakov loop, so if DIRICHLET_MODE=1 then x0 stops at
+   // geo->d_size[0]-1
+   for(int x0=0; x0<geo->d_size[0]-DIRICHLET_MODE; x0++)
       {
-      #if DIRICHLET_MODE == 1
-      // last link is outside lattice if Dirichlet BC are imposed
-      // on both bottom and top faces, so it doesn't take part in
-      // Polyakov loop
-      if(x0==(geo->d_size[0]-1)) break;
-      #endif
-
       times_equal(&matrix, &(GC->lattice[r][0]));
       
       #if GAUGE_DEBUG == 2
@@ -1581,7 +1578,7 @@ void perform_measures_localobs(Gauge_Conf const * const GC,
          {
          polyre=0.;
          polyim=0.;
-         
+
          polyakov_horizontal_correlator_timeslice(GC, geo, dist, slice, &polyre, &polyim);
          fprintf(datafilep, "%d %d %.12g %.12g ", dist, slice,  polyre, polyim);
          }
