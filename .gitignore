@@ -7,7 +7,8 @@ script_YM_compilation.sh
 
 Makefile
 
-config.*
+config.h
+config.log
 config.status
 
 yang_mills_local.exe
