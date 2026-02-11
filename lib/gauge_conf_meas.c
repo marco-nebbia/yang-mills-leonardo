@@ -6,7 +6,7 @@
 // 2 <-> Polyakov loop debug
 // 3 <-> Polyakov correlator debug
 #ifndef GAUGE_DEBUG
-#define GAUGE_DEBUG 3
+#define GAUGE_DEBUG 0
 #endif
 
 #ifndef DEBUG
