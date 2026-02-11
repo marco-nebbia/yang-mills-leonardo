@@ -6,7 +6,18 @@ script_YM_Cygwin.sh
 script_YM_compilation.sh
 
 config.h
+config.h.in
+config.h.in~
 config.log
 config.status
 
+configure
+configure~
+
 yang_mills_local.exe
+
+Makefile
+Makefile.in
+
+stamp-h1
+aclocal.m4
