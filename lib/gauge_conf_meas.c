@@ -1,8 +1,12 @@
 ﻿#ifndef GAUGE_CONF_MEAS_C
 #define GAUGE_CONF_MEAS_C
 
+// 0 <-> no debug
+// 1 <-> Polyakov loop debug
+// 2 <-> Polyakov loop debug
+// 3 <-> Polyakov correlator debug
 #ifndef GAUGE_DEBUG
-#define GAUGE_DEBUG 0
+#define GAUGE_DEBUG 3
 #endif
 
 #ifndef DEBUG
@@ -522,12 +526,17 @@ void polyakov_fixed_site(Gauge_Conf const * const GC,
       }
    #endif
    
+   int x0=0;
+
    // last link is outside lattice if Dirichlet BC are imposed
    // on both bottom and top faces, so it doesn't take part in
    // Polyakov loop, so if DIRICHLET_MODE=1 then x0 stops at
    // geo->d_size[0]-1
-   for(int x0=0; x0<geo->d_size[0]-DIRICHLET_MODE; x0++)
+   for(x0=0; x0<geo->d_size[0]; x0++)
       {
+      #if DIRICHLET_MODE == 1
+      if(x0==geo->d_size[0]-1) break;
+      #endif
       times_equal(&matrix, &(GC->lattice[r][0]));
       
       #if GAUGE_DEBUG == 2
@@ -549,6 +558,13 @@ void polyakov_fixed_site(Gauge_Conf const * const GC,
       #endif
      
       r=nnp(geo, r, 0);
+      }
+
+   if(x0!=geo->d_size[0]-DIRICHLET_MODE)
+      {
+      fprintf(stderr, "Links multiplied: %d (should be %d)\n", 
+            x0, geo->d_size[0] - DIRICHLET_MODE);
+      exit(EXIT_FAILURE);
       }
    
    *repoly=retr(&matrix);
@@ -787,6 +803,10 @@ void polyakov_correlator_dir(Gauge_Conf const * const GC,
 
       polyakov_fixed_site(GC, geo, r, &repoly1, &impoly1);
 
+      #if GAUGE_DEBUG == 3
+      fprintf(stderr, "TEST single Polyakov: re=%.12g im=%.12g\n", repoly1, impoly1);
+      #endif
+
       si_to_cart(cartcoord, r, geo);
       cartcoord[dir]+=d;
 
@@ -794,6 +814,10 @@ void polyakov_correlator_dir(Gauge_Conf const * const GC,
       r=cart_to_si(cartcoord, geo);
 
       polyakov_fixed_site(GC, geo, r, &repoly2, &impoly2);
+
+      #if GAUGE_DEBUG == 3
+      fprintf(stderr, "TEST single Polyakov: re=%.12g im=%.12g\n", repoly2, impoly2);
+      #endif
 
       #if NCOLOR == 2
       // if gauge group is SU(2), trace is real
@@ -1157,7 +1181,7 @@ void polyakov_horizontal_corr_bulk_dir1(Gauge_Conf const * const GC,
    }
 
 
-// compute the Wilson loop of dimensions d1*d2 on directions (i,j)
+// compute the Wilson loop of dimensions d_i*d_j on directions (i,j)
 // starting from lattice site r
 void wilson_fixed_site(Gauge_Conf const * const GC,
                        Geometry const * const geo,
@@ -1551,7 +1575,7 @@ void perform_measures_localobs(Gauge_Conf const * const GC,
       }
 
    // to measure correlators between spins of PCM
-   for(int dist=1; dist<=dist_max; dist++)
+   /*for(int dist=1; dist<=dist_max; dist++)
       {
       wilre=0.;
       wilim=0.;
@@ -1570,7 +1594,7 @@ void perform_measures_localobs(Gauge_Conf const * const GC,
          polyakov_correlator_dir(GC, geo, dist, dir, &polyre, &polyim);
          fprintf(datafilep, "%d %d %.12g %.12g ", dist, dir,  polyre, polyim);
          }
-      }
+      }*/
 
    /*for(int dist=1; dist<=dist_max; dist++)
       {
