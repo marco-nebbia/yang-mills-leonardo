@@ -251,7 +251,7 @@ int check_link_on_border(Geometry const * const geo, long r, int dir, int dirlin
   
   // if site is on the border of direction dir
   // and link is not orthogonal to the face, return 1 (true)
-  if(cartcoord[dir]!=0 || cartcoord[dir]!= (geo->d_size[dir]-1)) return 0;
+  if(cartcoord[dir]!=0 && cartcoord[dir]!= (geo->d_size[dir]-1)) return 0;
   else if(dirlink==dir) return 0;
   else return 1;
   }
