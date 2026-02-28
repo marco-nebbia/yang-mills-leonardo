@@ -850,9 +850,6 @@ void polyakov_correlator(Gauge_Conf const * const GC,
    double reprod, improd;
    double rememo, immemo;
 
-   int cartcoord[STDIM];
-   long r, rsp;
-
    #ifdef DEBUG
    if(d<=0)
       {
