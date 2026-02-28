@@ -577,6 +577,8 @@ void polyakov_fixed_site(Gauge_Conf const * const GC,
    #endif
    }
 
+// compute the horizontal Polyakov loop (the trace of) starting from the site r
+// in horizontal direction dir
 void polyakov_horizontal_fixed_site(Gauge_Conf const * const GC, 
                                     Geometry const * const geo,
                                     long r,
@@ -755,7 +757,7 @@ void polyakov_for_tracedef(Gauge_Conf const * const GC,
    free(imp);
    }
 
-// product of two Polyakov loops in spatial direction dir
+// correlator of two Polyakov loops on spatial direction dir
 // averaged on all spatial sites
 void polyakov_correlator_dir(Gauge_Conf const * const GC,
                              Geometry const * const geo,
@@ -777,7 +779,7 @@ void polyakov_correlator_dir(Gauge_Conf const * const GC,
       fprintf(stderr, "Direction of correlator of Polyakov loops is time, should be a spatial dimension! (%s, %d)\n", __FILE__, __LINE__);
       exit(EXIT_FAILURE);
       }
-   if(dir>=STDIM)
+   else if(dir>=STDIM)
       {
       fprintf(stderr, "Direction of correlator of Polyakov loops is greater than space-time dimensions! %d>=%d (%s, %d)\n", dir, STDIM, __FILE__, __LINE__);
       exit(EXIT_FAILURE);
@@ -787,7 +789,7 @@ void polyakov_correlator_dir(Gauge_Conf const * const GC,
       fprintf(stderr, "Distance between Polyakov loops <=0! (%s, %d)\n", __FILE__, __LINE__);
       exit(EXIT_FAILURE);
       }
-   if(d>geo->d_size[dir])
+   else if(d>geo->d_size[dir])
       {
       fprintf(stderr, "Distance between Polyakov loops greater than lattice size! %d>%d (%s, %d)\n", d, geo->d_size[dir], __FILE__, __LINE__);
       exit(EXIT_FAILURE);
@@ -835,6 +837,129 @@ void polyakov_correlator_dir(Gauge_Conf const * const GC,
 
    *re=reprod*(geo->d_inv_space_vol);
    *im=improd*(geo->d_inv_space_vol);
+   }
+
+// correlator of two Polyakov loops across all spatial directions
+// averaged on all spatial sites
+void polyakov_correlator(Gauge_Conf const * const GC,
+                             Geometry const * const geo,
+                             int d,
+                             double *re,
+                             double *im)
+   {
+   double reprod, improd;
+   double rememo, immemo;
+
+   int cartcoord[STDIM];
+   long r, rsp;
+
+   #ifdef DEBUG
+   if(d<=0)
+      {
+      fprintf(stderr, "Distance between Polyakov loops <=0! (%s, %d)\n", __FILE__, __LINE__);
+      exit(EXIT_FAILURE);
+      }
+   #endif
+
+   reprod=0.;
+   improd=0.;
+
+   rememo=0.;
+   immemo=0.;
+
+   for(int dir=1; dir<STDIM; dir++)
+      {
+      polyakov_correlator_dir(GC, geo, d, dir, &reprod, &improd);
+
+      rememo+=reprod;
+      immemo+=improd;
+      }
+
+   *re=rememo/(STDIM-1);
+   *im=immemo/(STDIM-1);
+   }
+
+// average horizontal Polyakov loop on timeslice (works only if)
+void polyakov_horizontal_timeslice(Gauge_Conf const * const GC,
+                                   Geometry const * const geo,
+                                   int slice,
+                                   double *re,
+                                   double *im)
+   {
+   double repoly, impoly;
+   double rememo, immemo;
+
+   int cartcoord[STDIM];
+   long r, rsp;
+
+   #ifdef DEBUG
+   for(int i=1; i<STDIM-1; i++)
+      {
+      if(geo->d_size[i]!=geo->d_size[i+1])
+         {
+         fprintf(stderr, "Lattice spatial is not squared, cannot average on horizontal Polyakov loops! %d!=%d (%s, %d)\n", 
+                 geo->d_size[i+1], geo->d_size[i+1], __FILE__, __LINE__);
+         exit(EXIT_FAILURE);
+         }
+      }
+   if(slice>=(geo->d_size[0]))
+      {
+      fprintf(stderr, "Timeslice of horizontal Polyakov loop outside lattice! %d>=%d (%s, %d)\n",
+              slice, geo->d_size[0], __FILE__, __LINE__);
+      exit(EXIT_FAILURE);
+      }
+   else if(slice<0)
+      {
+      fprintf(stderr, "Timeslice of horizontal Polyakov loop outside lattice! %d<0 (%s, %d)\n",
+              slice, __FILE__, __LINE__);
+      exit(EXIT_FAILURE);
+      }
+   #endif
+
+   repoly=0.;
+   impoly=0.;
+
+   rememo=0.;
+   immemo=0.;
+
+   cartcoord[0]=slice;
+
+   #if STDIM==3
+   cartcoord[1]=0;
+   cartcoord[2]=0;
+
+   r=cart_to_si(cartcoord, geo);
+
+   for(int x1=0; x1<geo->d_size[1]; x1++)
+      {
+      polyakov_horizontal_fixed_site(GC, geo, r, 2, &repoly, &impoly);
+
+      rememo+=repoly;
+      immemo+=impoly;
+      
+      r=nnp(geo, r, 1);
+      }
+
+   cartcoord[1]=0;
+
+   r=cart_to_si(cartcoord, geo);
+
+   for(int x2=0; x2<geo->d_size[2]; x2++)
+      {
+      polyakov_horizontal_fixed_site(GC, geo, r, 1, &repoly, &impoly);
+
+      rememo+=repoly;
+      immemo+=impoly;
+      
+      r=nnp(geo, r, 2);
+      }
+   #elif STDIM>3
+   fprintf(stderr, "Horizontal Polyakov loop on timeslices has yet to be generalized for STDIM>3! %d>3 (%s, %d)\n", STDIM, __FILE__, __LINE__);
+   exit(EXIT_FAILURE);
+   #endif
+
+   *re=rememo/(geo->d_size[1]*geo->d_size[2]);
+   *im=immemo/(geo->d_size[1]*geo->d_size[2]);
    }
 
 // product of two Polyakov loops parallel to
@@ -1587,14 +1712,11 @@ void perform_measures_localobs(Gauge_Conf const * const GC,
    // to measure correlators between Polyakov loops
    for(int dist=1; dist<=dist_max; dist++)
       {   
-      for(int dir=1; dir<STDIM; dir++)
-         {
-         polyre=0.;
-         polyim=0.;
+      polyre=0.;
+      polyim=0.;
 
-         polyakov_correlator_dir(GC, geo, dist, dir, &polyre, &polyim);
-         fprintf(datafilep, "%d %d %.12g %.12g ", dist, dir,  polyre, polyim);
-         }
+      polyakov_correlator(GC, geo, dist, &polyre, &polyim);
+      fprintf(datafilep, "%d %.12g %.12g ", dist,  polyre, polyim);
       }
 
    /*for(int dist=1; dist<=dist_max; dist++)
@@ -1616,6 +1738,15 @@ void perform_measures_localobs(Gauge_Conf const * const GC,
 
       plaquette_slice_time(GC, geo, slice, &plaqs, &plaqt);
       fprintf(datafilep, "%d %.12g %.12g ", slice,  plaqs, plaqt);
+      }
+
+   for(int slice=0; slice<(geo->d_size[0]); slice++)
+      {
+      polyre=0.;
+      polyim=0.;
+
+      polyakov_horizontal_timeslice(GC, geo, slice, &polyre, &polyim);
+      fprintf(datafilep, "%d %.12g %.12g ", slice,  polyre, polyim);
       }
    
    // topological observables
