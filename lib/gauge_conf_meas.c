@@ -887,7 +887,7 @@ void polyakov_horizontal_timeslice(Gauge_Conf const * const GC,
    double rememo, immemo;
 
    int cartcoord[STDIM];
-   long r, rsp;
+   long r;
 
    #ifdef DEBUG
    for(int i=1; i<STDIM-1; i++)
