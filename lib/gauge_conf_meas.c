@@ -955,8 +955,8 @@ void polyakov_horizontal_timeslice(Gauge_Conf const * const GC,
    exit(EXIT_FAILURE);
    #endif
 
-   *re=rememo/(geo->d_size[1]*geo->d_size[2]);
-   *im=immemo/(geo->d_size[1]*geo->d_size[2]);
+   *re=rememo/(geo->d_size[1]+geo->d_size[2]);
+   *im=immemo/(geo->d_size[1]+geo->d_size[2]);
    }
 
 // product of two Polyakov loops parallel to
