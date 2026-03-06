@@ -1697,14 +1697,14 @@ void perform_measures_localobs(Gauge_Conf const * const GC,
       }
 
    // to measure correlators between spins of PCM
-   /*for(int dist=1; dist<=dist_max; dist++)
+   for(int dist=1; dist<=dist_max; dist++)
       {
       wilre=0.;
       wilim=0.;
       
       wilson_slice_time(GC, geo, dist, 1, (geo->d_size[0])-1, &wilre, &wilim);
       fprintf(datafilep, "%d %.12g %.12g ", dist, wilre, wilim);
-      }*/
+      }
       
    // to measure correlators between Polyakov loops
    for(int dist=1; dist<=dist_max; dist++)
