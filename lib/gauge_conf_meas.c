@@ -428,6 +428,44 @@ void polyakov(Gauge_Conf const * const GC,
    *impoly=imp*geo->d_inv_space_vol;
    }
 
+// compute the mean Polyakov loop (the trace of)
+// when Dirichlet BC are enforced on both faces
+void polyakov_dirich(Gauge_Conf const * const GC,
+                     Geometry const * const geo,
+                     double *repoly,
+                     double *impoly)
+   {
+   long rsp;
+   double rep, imp;
+
+   rep=0.0;
+   imp=0.0;
+
+   #ifdef OPENMP_MODE
+   #pragma omp parallel for num_threads(NTHREADS) private(rsp) reduction(+ : rep) reduction(+ : imp)
+   #endif
+   for(rsp=0; rsp<geo->d_space_vol; rsp++)
+      {
+      long r;
+      int i;
+      GAUGE_GROUP matrix;
+
+      r=sisp_and_t_to_si(geo, rsp, 0);
+
+      one(&matrix);
+      for(i=0; i<geo->d_size[0]-1; i++)
+         {
+         times_equal(&matrix, &(GC->lattice[r][0]));
+         r=nnp(geo, r, 0);
+         }
+
+      rep+=retr(&matrix);
+      imp+=imtr(&matrix);
+      }
+
+   *repoly=rep*geo->d_inv_space_vol;
+   *impoly=imp*geo->d_inv_space_vol;
+   }
 
 // compute the mean Polyakov loop in the adjoint representation (the trace of)
 void polyakov_adj(Gauge_Conf const * const GC,
@@ -1666,18 +1704,18 @@ void perform_measures_localobs(Gauge_Conf const * const GC,
                                FILE *datafilep,
                                FILE *monofilep)
    {
-   double plaqs, plaqt;
-   //double plaqpar, plaqort;
-   double polyre, polyim;
-   double wilre, wilim;
+   double plaqs=0., plaqt=0.;
+   //double plaqpar=0., plaqort=0.;
+   double polyre=0., polyim=0.;
+   double wilre=0., wilim=0.;
    //double prod_polyre, prod_polyim;
    int dist_max=param->d_dist_poly;
 
    //plaquette(GC, geo, &plaqs, &plaqt);
-   //polyakov(GC, geo, &polyre, &polyim);
+   polyakov_dirich(GC, geo, &polyre, &polyim);
 
    fprintf(datafilep, "%ld ", GC->update_index);
-   //fprintf(datafilep, "%.12g %.12g ", plaqs, plaqt);
+   fprintf(datafilep, "%.12g %.12g ", polyre, polyim);
 
    // quality check
    /*for(int dist=1; dist<=dist_max; dist++)

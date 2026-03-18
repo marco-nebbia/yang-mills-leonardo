@@ -204,6 +204,10 @@ void polyakov(Gauge_Conf const * const GC,
               Geometry const * const geo,
               double *repoly,
               double *impoly);
+void polyakov_dirich(Gauge_Conf const * const GC,
+                     Geometry const * const geo,
+                     double *repoly,
+                     double *impoly);
 void polyakov_adj(Gauge_Conf const * const GC,
                   Geometry const * const geo,
                   double *repoly,
