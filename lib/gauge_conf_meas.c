@@ -1340,6 +1340,41 @@ void polyakov_horizontal_corr_bulk_dir1(Gauge_Conf const * const GC,
    *im=(double) improd/(geo->d_size[2]);
    }
 
+void link_vertical_timeslice(Gauge_Conf const * const GC,
+                             Geometry const * const geo,
+                             int t,
+                             double *re,
+                             double *im)
+   {
+   long rsp;
+   double relink, imlink;
+
+   relink=0.0;
+   imlink=0.0;
+
+   #ifdef OPENMP_MODE
+   #pragma omp parallel for num_threads(NTHREADS) private(rsp) reduction(+ : rep) reduction(+ : imp)
+   #endif
+   for(rsp=0; rsp<geo->d_space_vol; rsp++)
+      {
+      long r;
+      int i;
+      GAUGE_GROUP matrix;
+
+      r=sisp_and_t_to_si(geo, rsp, t);
+
+      one(&matrix);
+
+      times_equal(&matrix, &(GC->lattice[r][0]));
+
+      relink+=retr(&matrix);
+      imlink+=imtr(&matrix);
+      }
+
+   *re=relink*geo->d_inv_space_vol;
+   *im=imlink*geo->d_inv_space_vol;
+   }
+
 
 // compute the Wilson loop of dimensions d_i*d_j on directions (i,j)
 // starting from lattice site r
@@ -1709,6 +1744,8 @@ void perform_measures_localobs(Gauge_Conf const * const GC,
    double polyre=0., polyim=0.;
    double wilre=0., wilim=0.;
    //double prod_polyre, prod_polyim;
+   double linkre=0., linkim=0.;
+
    int dist_max=param->d_dist_poly;
 
    //plaquette(GC, geo, &plaqs, &plaqt);
@@ -1735,14 +1772,17 @@ void perform_measures_localobs(Gauge_Conf const * const GC,
       }
 
    // to measure correlators between spins of PCM
-   /*for(int dist=1; dist<=dist_max; dist++)
+   for(int dist=1; dist<=dist_max; dist++)
       {
       wilre=0.;
       wilim=0.;
       
       wilson_slice_time(GC, geo, dist, 1, (geo->d_size[0])-1, &wilre, &wilim);
       fprintf(datafilep, "%d %.12g %.12g ", dist, wilre, wilim);
-      }*/
+      }
+
+   // to measure average value of spins of PCM
+   link_vertical_timeslice(GC, geo, geo->d_size[0]-1, &linkre, &linkim);
       
    // to measure correlators between Polyakov loops
    for(int dist=1; dist<=dist_max; dist++)

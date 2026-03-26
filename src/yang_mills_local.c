@@ -134,19 +134,19 @@ void print_template_input(void)
     }
   else
     {
-    fprintf(fp, "size 9 64 64\n");
+    fprintf(fp, "size 2 64 64\n");
     fprintf(fp,"\n");
     fprintf(fp, "beta 12.15266\n");
-    fprintf(fp, "theta 1.5\n");
+    fprintf(fp, "theta 0.0\n");
     fprintf(fp,"\n");
-    fprintf(fp, "sample    3000\n");
+    fprintf(fp, "sample    8000\n");
     fprintf(fp, "thermal   0\n");
     fprintf(fp, "overrelax 5\n");
     fprintf(fp, "measevery 1\n");
     fprintf(fp, "monomeas  0  # 1=monopoles measures are performed\n");
     fprintf(fp, "dist_poly 64\n");
     fprintf(fp,"\n");
-    fprintf(fp, "start                   0  # 0=ordered  1=random  2=from saved configuration\n");
+    fprintf(fp, "start                   1  # 0=ordered  1=random  2=from saved configuration\n");
     fprintf(fp, "saveconf_back_every     5  # if 0 does not save, else save backup configurations every ... updates\n");
     fprintf(fp, "saveconf_analysis_every 0  # if 0 does not save, else save configurations for analysis every ... updates\n");
     fprintf(fp, "\n");
@@ -159,7 +159,7 @@ void print_template_input(void)
     fprintf(fp, "mon_file   mon.dat\n");
     fprintf(fp, "log_file   log.dat\n");
     fprintf(fp, "\n");
-    fprintf(fp, "randseed 0    #(0=time, RANDSEED=takes random seed from SLURM)\n");
+    fprintf(fp, "randseed RANDSEED    #(0=time, RANDSEED=takes random seed from SLURM)\n");
     fclose(fp);
     }
   }

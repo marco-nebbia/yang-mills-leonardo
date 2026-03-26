@@ -272,6 +272,11 @@ void polyakov_horizontal_correlator_timeslice(Gauge_Conf const * const GC,
                                               int slice,
                                               double *re,
                                               double *im);
+void link_vertical_timeslice(Gauge_Conf const * const GC,
+                             Geometry const * const geo,
+                             int t,
+                             double *re,
+                             double *im);
 void wilson_fixed_site(Gauge_Conf const * const GC,
                        Geometry const * const geo,
                        long r,
