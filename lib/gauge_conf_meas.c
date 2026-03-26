@@ -1358,7 +1358,6 @@ void link_vertical_timeslice(Gauge_Conf const * const GC,
    for(rsp=0; rsp<geo->d_space_vol; rsp++)
       {
       long r;
-      int i;
       GAUGE_GROUP matrix;
 
       r=sisp_and_t_to_si(geo, rsp, t);
