@@ -1780,7 +1780,7 @@ void perform_measures_localobs(Gauge_Conf const * const GC,
 
    // to measure average value of spins of PCM
    link_vertical_timeslice(GC, geo, geo->d_size[0]-1, &linkre, &linkim);
-   fprintf(datafilep, "%.12g %.12g ", linkre, linkim)
+   fprintf(datafilep, "%.12g %.12g ", linkre, linkim);
       
    // to measure correlators between Polyakov loops
    for(int dist=1; dist<=dist_max; dist++)
