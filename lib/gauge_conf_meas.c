@@ -1300,23 +1300,21 @@ void polyakov_horizontal_corr_bulk_dir1(Gauge_Conf const * const GC,
 
    l=(int) (geo->d_size[0]-d)/2;
 
-   cartcoord[0]=l-1;
-   cartcoord[1]=0;
-   cartcoord[2]=0;
-
    reprod=0.;
    improd=0.;
 
    for(int x2=0; x2<(geo->d_size[2]); x2++)
       {
+      cartcoord[0]=l-1;
+      cartcoord[1]=0;
       cartcoord[2]=x2;
 
       r=cart_to_si(cartcoord, geo);
 
       polyakov_horizontal_fixed_site(GC, geo, r, 1, &repoly1, &impoly1);
 
-      cartcoord[2]+=d;
-      if(cartcoord[2]>=(geo->d_size[2])) cartcoord[2]-=(geo->d_size[2]);
+      cartcoord[0]+=d;
+      if(cartcoord[0]>=(geo->d_size[0])) cartcoord[0]-=(geo->d_size[2]);
 
       r=cart_to_si(cartcoord, geo);
 
@@ -1738,50 +1736,50 @@ void perform_measures_localobs(Gauge_Conf const * const GC,
                                FILE *datafilep,
                                FILE *monofilep)
    {
-   double plaqs=0., plaqt=0.;
+   //double plaqs=0., plaqt=0.;
    //double plaqpar=0., plaqort=0.;
-   double polyre=0., polyim=0.;
-   double wilre=0., wilim=0.;
-   //double prod_polyre, prod_polyim;
-   double linkre=0., linkim=0.;
+   //double polyre=0., polyim=0.;
+   //double wilre=0., wilim=0.;
+   double prod_polyre=0., prod_polyim=0.;
+   //double linkre=0., linkim=0.;
 
    int dist_max=param->d_dist_poly;
 
    //plaquette(GC, geo, &plaqs, &plaqt);
-   polyakov_dirich(GC, geo, &polyre, &polyim);
+   //polyakov_dirich(GC, geo, &polyre, &polyim);
 
    fprintf(datafilep, "%ld ", GC->update_index);
-   fprintf(datafilep, "%.12g %.12g ", polyre, polyim);
+   //fprintf(datafilep, "%.12g %.12g ", polyre, polyim);
 
    // quality check
-   /*for(int dist=1; dist<=dist_max; dist++)
+   for(int dist=2; dist<=dist_max; dist+=2)
       {
-      polyakov_horizontal_corr_bulk_dir1(GC, geo, dist, &polyre, &polyim);
-      fprintf(datafilep, "%d  %.12g %.12g ", dist,  polyre, polyim);
-      }*/
+      polyakov_horizontal_corr_bulk_dir1(GC, geo, dist, &prod_polyre, &prod_polyim);
+      fprintf(datafilep, "%d  %.12g %.12g ", dist, prod_polyre, prod_polyim);
+      }
 
    // to measure correlators between spins on bottom face
-   for(int dist=1; dist<=dist_max; dist++)
+   /*for(int dist=1; dist<=dist_max; dist++)
       {
       wilre=0.;
       wilim=0.;
       
       wilson_slice_time(GC, geo, dist, 1, 0, &wilre, &wilim);
       fprintf(datafilep, "%d %.12g %.12g ", dist, wilre, wilim);
-      }
+      }*/
 
    // to measure correlators between spins of PCM
-   for(int dist=1; dist<=dist_max; dist++)
+   /*for(int dist=1; dist<=dist_max; dist++)
       {
       wilre=0.;
       wilim=0.;
       
       wilson_slice_time(GC, geo, dist, 1, (geo->d_size[0])-1, &wilre, &wilim);
       fprintf(datafilep, "%d %.12g %.12g ", dist, wilre, wilim);
-      }
+      }*/
 
    // to measure average value of spins of PCM
-   link_vertical_timeslice(GC, geo, geo->d_size[0]-1, &linkre, &linkim);
+   /*link_vertical_timeslice(GC, geo, geo->d_size[0]-1, &linkre, &linkim);
       
    // to measure correlators between Polyakov loops
    for(int dist=1; dist<=dist_max; dist++)
@@ -1791,7 +1789,7 @@ void perform_measures_localobs(Gauge_Conf const * const GC,
 
       polyakov_correlator(GC, geo, dist, &polyre, &polyim);
       fprintf(datafilep, "%d %.12g %.12g ", dist,  polyre, polyim);
-      }
+      }*/
 
    /*for(int dist=1; dist<=dist_max; dist++)
       {
@@ -1805,23 +1803,23 @@ void perform_measures_localobs(Gauge_Conf const * const GC,
          }
       }*/
 
-   for(int slice=0; slice<(geo->d_size[0]); slice++)
+   /*for(int slice=0; slice<(geo->d_size[0]); slice++)
       {
       plaqs=0.;
       plaqt=0.;
 
       plaquette_slice_time(GC, geo, slice, &plaqs, &plaqt);
       fprintf(datafilep, "%d %.12g %.12g ", slice,  plaqs, plaqt);
-      }
+      }*/
 
-   for(int slice=0; slice<(geo->d_size[0]); slice++)
+   /*for(int slice=0; slice<(geo->d_size[0]); slice++)
       {
       polyre=0.;
       polyim=0.;
 
       polyakov_horizontal_timeslice(GC, geo, slice, &polyre, &polyim);
       fprintf(datafilep, "%d %.12g %.12g ", slice,  polyre, polyim);
-      }
+      }*/
    
    // topological observables
    #if( (STDIM==4 && NCOLOR>1) || (STDIM==2 && NCOLOR==1) )
